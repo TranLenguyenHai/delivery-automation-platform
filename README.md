@@ -11,3 +11,26 @@ Dự án này xây dựng một nền tảng tự động hóa nhằm tối ưu 
 * **Core Automation Engine:** [n8n](https://n8n.io/) (Nền tảng Workflow Automation mã nguồn mở).
 * **Environment:** Hệ điều hành Linux (Ubuntu).
 * **Deployment:** Docker & Containerization.
+## 🗺 Lộ trình thực hiện (Implementation Roadmap)
+Để hoàn thiện hệ thống, dự án được chia thành các giai đoạn cụ thể:
+
+* **[x] Giai đoạn 1: Chuẩn bị Môi trường (Environment Setup)**
+  * Thiết lập môi trường Linux (Ubuntu).
+  * Cài đặt Docker engine để quản lý container.
+* **[ ] Giai đoạn 2: Triển khai n8n (n8n Deployment)**
+  * Pull image n8n từ Docker Hub.
+  * Cấu hình port và volume để lưu trữ dữ liệu (persistent data) trên Linux.
+* **[ ] Giai đoạn 3: Thiết kế Workflow (Workflow Design)**
+  * Xây dựng Webhook tiếp nhận dữ liệu đơn hàng đầu vào (JSON).
+  * Tích hợp HTTP Request gọi Mock API báo giá của 3 đơn vị vận chuyển.
+  * Viết logic (Code Node) để so sánh và lọc ra mức giá rẻ nhất.
+* **[ ] Giai đoạn 4: Hoàn thiện & Báo cáo (Testing & Delivery)**
+  * Thiết lập node đầu ra (gửi thông báo Telegram/Slack hoặc ghi vào Google Sheets).
+  * Viết tài liệu báo cáo và chuẩn bị kịch bản demo trực tiếp luồng chạy.
+
+## 🚀 Hướng dẫn khởi chạy (How to Run)
+Dự án được đóng gói để chạy trực tiếp trên môi trường Linux có cài đặt sẵn Docker. 
+
+**Chạy lệnh sau tại Terminal để khởi động hệ thống n8n:**
+```bash
+sudo docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
