@@ -1,8 +1,8 @@
-# Delivery Cost Optimization Automation Platform 🚀
+# Delivery Cost Optimization Automation Platform 
 
 **Môn học:** Chuyên đề 2 (IT) - Low code, No code & Automation
 
-## 📌 Giới thiệu dự án (Project Overview)
+## Giới thiệu dự án (Project Overview)
 Dự án này xây dựng một nền tảng tự động hóa nhằm tối ưu hóa chi phí vận chuyển (Delivery Cost Optimization). Hệ thống tiếp nhận thông tin đơn hàng, tự động truy vấn giá cước từ nhiều đơn vị vận chuyển khác nhau (GHN, GHTK, Viettel Post,...), so sánh và lựa chọn đối tác có chi phí thấp nhất để tiến hành giao hàng.
 
 Điểm nổi bật của dự án là việc ứng dụng **Kiến trúc Lai (Hybrid Architecture)**, kết hợp giữa phát triển phần mềm truyền thống cho Core Backend và tư duy **Low-code/No-code** cho quy trình tự động hóa. Hệ thống được triển khai thực tế trên môi trường máy chủ **Linux**, bám sát tiêu chuẩn vận hành Microservices của doanh nghiệp hiện đại.
@@ -34,7 +34,7 @@ Dự án được chia thành các giai đoạn phối hợp song song giữa Co
   * Test toàn trình (End-to-End) từ lúc đặt hàng đến lúc chốt giá.
   * Viết tài liệu báo cáo và chuẩn bị kịch bản demo.
 
-## 🚀 Hướng dẫn khởi chạy (How to Run)
+## Hướng dẫn khởi chạy (How to Run)
 Hệ thống yêu cầu máy chủ Linux có cài đặt sẵn Docker. Chạy các lệnh sau tại Terminal để khởi động các service ngầm:
 
 **Bước 1: Khởi chạy Database MySQL**
