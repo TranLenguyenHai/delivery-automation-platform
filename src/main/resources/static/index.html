@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nền Tảng Tối Ưu Chi Phí Giao Hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; }
+        .card { border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .header-title { color: #0d6efd; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <h3 class="text-center header-title mb-4">📦 HỆ THỐNG ĐẶT ĐƠN GIAO HÀNG</h3>
+                <p class="text-center text-muted">Hệ thống sẽ tự động so sánh và chọn đơn vị vận chuyển rẻ nhất!</p>
+
+                <form id="orderForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Tên người nhận</label>
+                            <input type="text" class="form-control" id="customerName" placeholder="Nhập tên người nhận..." required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="customerPhone" placeholder="Nhập số điện thoại..." required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Địa chỉ nhận hàng (Chi tiết)</label>
+                        <input type="text" class="form-control" id="deliveryAddress" placeholder="Ví dụ: 470 Trần Đại Nghĩa, Ngũ Hành Sơn, Đà Nẵng..." required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Khối lượng kiện hàng (Gram)</label>
+                            <input type="number" class="form-control" id="packageWeight" placeholder="Ví dụ: 500" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Ghi chú cho Shipper</label>
+                            <input type="text" class="form-control" id="note" placeholder="Hàng dễ vỡ, giao giờ hành chính...">
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="submitOrder()">🔍 Tìm Giá Rẻ Nhất & Lên Đơn</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function submitOrder() {
+        // Gom dữ liệu từ các ô nhập liệu trên web
+        const orderData = {
+            customerName: document.getElementById('customerName').value,
+            customerPhone: document.getElementById('customerPhone').value,
+            deliveryAddress: document.getElementById('deliveryAddress').value,
+            packageWeight: document.getElementById('packageWeight').value,
+            note: document.getElementById('note').value
+        };
+
+        // Bắn dữ liệu xuống Spring Boot (Backend)
+        fetch('/api/orders/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Hiển thị thông báo trả về từ Java
+            alert("HỆ THỐNG BÁO: " + data);
+        })
+        .catch(error => {
+            alert("Có lỗi xảy ra: " + error);
+        });
+    }
+</script>
+
+</body>
+</html>
