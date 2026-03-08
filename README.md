@@ -1,38 +1,43 @@
-# delivery-automation-platform
-# Delivery Cost Optimization Automation Platform 
+# Delivery Cost Optimization Automation Platform 🚀
 
 **Môn học:** Chuyên đề 2 (IT) - Low code, No code & Automation
-## Giới thiệu dự án (Project Overview)
+
+## 📌 Giới thiệu dự án (Project Overview)
 Dự án này xây dựng một nền tảng tự động hóa nhằm tối ưu hóa chi phí vận chuyển (Delivery Cost Optimization). Hệ thống tiếp nhận thông tin đơn hàng, tự động truy vấn giá cước từ nhiều đơn vị vận chuyển khác nhau (GHN, GHTK, Viettel Post,...), so sánh và lựa chọn đối tác có chi phí thấp nhất để tiến hành giao hàng.
 
-Điểm nổi bật của dự án là việc ứng dụng tư duy **Low-code/No-code** kết hợp với triển khai thực tế trên môi trường máy chủ **Linux**, bám sát yêu cầu vận hành của doanh nghiệp hiện đại.
+Điểm nổi bật của dự án là việc ứng dụng **Kiến trúc Lai (Hybrid Architecture)**, kết hợp giữa phát triển phần mềm truyền thống cho Core Backend và tư duy **Low-code/No-code** cho quy trình tự động hóa. Hệ thống được triển khai thực tế trên môi trường máy chủ **Linux**, bám sát tiêu chuẩn vận hành Microservices của doanh nghiệp hiện đại.
 
 ## 🛠 Công nghệ sử dụng (Tech Stack)
-* **Core Automation Engine:** [n8n](https://n8n.io/) (Nền tảng Workflow Automation mã nguồn mở).
-* **Environment:** Hệ điều hành Linux (Ubuntu).
-* **Deployment:** Docker & Containerization.
-* **IDE: ** Intelij.
-* **DATABASE: ** MySQL And DOCKER.
+* **Core Backend & UI:** Java Spring Boot (IDE: IntelliJ IDEA Community).
+* **Core Automation Engine:** [n8n](https://n8n.io/) (Nền tảng Workflow Automation).
+* **Database:** MySQL.
+* **Environment & Deployment:** Hệ điều hành Linux (Ubuntu), quản lý bằng Docker & Containerization.
+
 ## 🗺 Lộ trình thực hiện (Implementation Roadmap)
-Để hoàn thiện hệ thống, dự án được chia thành các giai đoạn cụ thể:
+Dự án được chia thành các giai đoạn phối hợp song song giữa Core Backend và Automation:
 
 * **[x] Giai đoạn 1: Chuẩn bị Môi trường (Environment Setup)**
-  * Thiết lập môi trường Linux (Ubuntu).
-  * Cài đặt Docker engine để quản lý container.
-* **[ ] Giai đoạn 2: Triển khai n8n (n8n Deployment)**
-  * Pull image n8n từ Docker Hub.
-  * Cấu hình port và volume để lưu trữ dữ liệu (persistent data) trên Linux.
-* **[ ] Giai đoạn 3: Thiết kế Workflow (Workflow Design)**
-  * Xây dựng Webhook tiếp nhận dữ liệu đơn hàng đầu vào (JSON).
-  * Tích hợp HTTP Request gọi Mock API báo giá của 3 đơn vị vận chuyển.
-  * Viết logic (Code Node) để so sánh và lọc ra mức giá rẻ nhất.
-* **[ ] Giai đoạn 4: Hoàn thiện & Báo cáo (Testing & Delivery)**
-  * Thiết lập node đầu ra (gửi thông báo Telegram/Slack hoặc ghi vào Google Sheets).
-  * Viết tài liệu báo cáo và chuẩn bị kịch bản demo trực tiếp luồng chạy.
+  * Cài đặt Docker engine trên môi trường Linux (Ubuntu).
+  * Cài đặt IDE IntelliJ IDEA phục vụ phát triển Backend.
+  * Khởi tạo container cho Database MySQL và n8n Engine.
+* **[ ] Giai đoạn 2: Phát triển Core Backend (Java Spring Boot)**
+  * Xây dựng giao diện Web đặt hàng và quản lý cho Admin/User.
+  * Thiết kế Database Schema (`users`, `orders`, `delivery_history`).
+  * Viết API nhận đơn hàng và kích hoạt Webhook gửi sang n8n.
+* **[ ] Giai đoạn 3: Thiết kế Workflow Tự động hóa (n8n Design)**
+  * Nhận Webhook từ Spring Boot (thông tin kiện hàng, địa chỉ).
+  * HTTP Request gọi Mock API báo giá của 3 đơn vị vận chuyển.
+  * Viết logic (Code Node) để so sánh và lọc ra mức giá vận chuyển rẻ nhất.
+  * Tích hợp Node MySQL để tự động cập nhật giá vào Database.
+* **[ ] Giai đoạn 4: Tích hợp, Mở rộng & Báo cáo (Integration & Delivery)**
+  * Mở rộng luồng n8n: Tự động gửi tin nhắn báo đơn cho khách và bắn đơn cho Shipper (qua Telegram).
+  * Test toàn trình (End-to-End) từ lúc đặt hàng đến lúc chốt giá.
+  * Viết tài liệu báo cáo và chuẩn bị kịch bản demo.
 
-## Hướng dẫn khởi chạy (How to Run)
-Dự án được đóng gói để chạy trực tiếp trên môi trường Linux có cài đặt sẵn Docker. 
+## 🚀 Hướng dẫn khởi chạy (How to Run)
+Hệ thống yêu cầu máy chủ Linux có cài đặt sẵn Docker. Chạy các lệnh sau tại Terminal để khởi động các service ngầm:
 
-**Chạy lệnh sau tại Terminal để khởi động hệ thống n8n:**
+**Bước 1: Khởi chạy Database MySQL**
+Chạy lệnh sau để khởi động MySQL, mở port 3306 và tạo sẵn database `delivery_db`. Dữ liệu được lưu trữ an toàn qua Docker Volume.
 ```bash
-sudo docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+sudo docker run -d --name mysql-server -p 3306:3306 -v mysql_data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=123456 -e MYSQL_DATABASE=delivery_db mysql:latest
