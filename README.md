@@ -44,8 +44,7 @@ sudo docker run -d --name mysql-server -p 3306:3306 -v mysql_data:/var/lib/mysql
 
 ** Bước 2: Khởi chạy Tự động hóa n8n
 Chạy lệnh sau để khởi động n8n core. Dữ liệu workflow được bảo lưu qua Volume.
-sudo docker run -d --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
-
+sudo docker run -d --name n8n --restart unless-stopped -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
 ** Bước 3: Khởi chạy Core Backend
 Clone repository này về máy.
 Mở thư mục code bằng IntelliJ IDEA.
