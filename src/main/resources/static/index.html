@@ -18,38 +18,38 @@
         <div class="col-md-8">
             <div class="card p-4">
                 <h3 class="text-center header-title mb-4">📦 HỆ THỐNG ĐẶT ĐƠN GIAO HÀNG</h3>
-                <p class="text-center text-muted">Hệ thống sẽ tự động so sánh và chọn đơn vị vận chuyển rẻ nhất!</p>
+                <p class="text-center text-muted">Hệ thống của Thái & Hải - Tự động hóa Logi</p>
 
                 <form id="orderForm">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Tên người nhận</label>
-                            <input type="text" class="form-control" id="customerName" placeholder="Nhập tên người nhận..." required>
+                            <input type="text" class="form-control" id="customerName" placeholder="Ví dụ: Nguyễn Văn A" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Số điện thoại</label>
-                            <input type="tel" class="form-control" id="customerPhone" placeholder="Nhập số điện thoại..." required>
+                            <input type="text" class="form-control" id="customerPhone" placeholder="Ví dụ: 0905123456" required>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Địa chỉ nhận hàng (Chi tiết)</label>
-                        <input type="text" class="form-control" id="deliveryAddress" placeholder="Ví dụ: 470 Trần Đại Nghĩa, Ngũ Hành Sơn, Đà Nẵng..." required>
+                        <label class="form-label fw-bold">Địa chỉ giao hàng</label>
+                        <input type="text" class="form-control" id="deliveryAddress" placeholder="Số nhà, tên đường, quận/huyện..." required>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Khối lượng kiện hàng (Gram)</label>
+                            <label class="form-label fw-bold">Khối lượng (gram)</label>
                             <input type="number" class="form-control" id="packageWeight" placeholder="Ví dụ: 500" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Ghi chú cho Shipper</label>
+                            <label class="form-label fw-bold">Ghi chú</label>
                             <input type="text" class="form-control" id="note" placeholder="Hàng dễ vỡ, giao giờ hành chính...">
                         </div>
                     </div>
 
                     <div class="d-grid mt-4">
-                        <button type="button" class="btn btn-primary btn-lg" onclick="submitOrder()">🔍 Tìm Giá Rẻ Nhất & Lên Đơn</button>
+                        <button type="button" id="submitBtn" class="btn btn-primary btn-lg fw-bold">🔍 TÌM GIÁ RẺ NHẤT & LÊN ĐƠN</button>
                     </div>
                 </form>
 
@@ -59,17 +59,32 @@
 </div>
 
 <script>
-    function submitOrder() {
-        // Gom dữ liệu từ các ô nhập liệu trên web
+    document.getElementById("submitBtn").addEventListener("click", function() {
+        console.log("🚀 Đang xử lý gửi đơn hàng...");
+
+        // 1. Lấy dữ liệu từ các ô nhập liệu
+        const name = document.getElementById('customerName').value;
+        const phone = document.getElementById('customerPhone').value;
+        const address = document.getElementById('deliveryAddress').value;
+        const weight = document.getElementById('packageWeight').value;
+        const note = document.getElementById('note').value;
+
+        // Kiểm tra xem Thái có nhập thiếu thông tin không
+        if (!name || !phone || !address || !weight) {
+            alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+            return;
+        }
+
         const orderData = {
-            customerName: document.getElementById('customerName').value,
-            customerPhone: document.getElementById('customerPhone').value,
-            deliveryAddress: document.getElementById('deliveryAddress').value,
-            packageWeight: document.getElementById('packageWeight').value,
-            note: document.getElementById('note').value
+            customerName: name,
+            customerPhone: phone,
+            deliveryAddress: address,
+            packageWeight: parseInt(weight),
+            note: note
         };
 
-        // Bắn dữ liệu xuống Spring Boot (Backend)
+        // 2. Gửi dữ liệu xuống Java Backend
+        // Lưu ý: Dùng đường dẫn tương đối để tránh lỗi CORS khi chạy trên cùng server
         fetch('/api/orders/create', {
             method: 'POST',
             headers: {
@@ -79,13 +94,17 @@
         })
         .then(response => response.text())
         .then(data => {
-            // Hiển thị thông báo trả về từ Java
-            alert("HỆ THỐNG BÁO: " + data);
+            // Hiển thị thông báo thành công
+            alert("KẾT QUẢ: " + data);
+
+            // Xóa sạch form sau khi đặt thành công để đặt đơn mới
+            document.getElementById("orderForm").reset();
         })
         .catch(error => {
-            alert("Có lỗi xảy ra: " + error);
+            console.error("Lỗi:", error);
+            alert("Có lỗi xảy ra khi kết nối đến Server Java!");
         });
-    }
+    });
 </script>
 
 </body>
