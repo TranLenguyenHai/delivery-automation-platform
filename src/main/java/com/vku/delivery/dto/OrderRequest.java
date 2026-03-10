@@ -6,6 +6,7 @@ public class OrderRequest {
     private String deliveryAddress;
     private Integer packageWeight;
     private String note;
+    private Double distanceKm;
 
     // Dưới đây là các hàm Get/Set để Spring Boot tự động đọc được dữ liệu
     public String getCustomerName() { return customerName; }
@@ -22,4 +23,10 @@ public class OrderRequest {
 
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
+    public Double getDistanceKm() {
+        return distanceKm;
+    }
+    public void setDistanceKm(Double distanceKm) {
+        this.distanceKm = distanceKm;
+    }
 }
