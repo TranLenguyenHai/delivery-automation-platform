@@ -38,4 +38,30 @@ Dự án được chia thành các giai đoạn phối hợp song song giữa Co
 Hệ thống yêu cầu máy chủ Linux có cài đặt sẵn Docker. Chạy các lệnh sau tại Terminal để khởi động các service ngầm:
 
 Bước 1: Khởi động hệ thống nền (Database & Automation Engine)
-Mở Terminal tại thư mục gốc của dự án (nơi chứa file docker-compose.yml) và chạy lệnh sau để khởi động đồng thời MySQL và n8n ở chế độ ngầm:
+Trường hợp 1: Chạy lần đầu tiên (Dành cho máy mới clone code về)
+Mở Terminal tại thư mục gốc của dự án (nơi chứa file docker-compose.yml) và chạy lệnh sau để Docker tự động tải và xây dựng hệ thống:
+
+sudo docker compose up -d
+
+Trường hợp 2: Chạy các lần sau (Tắt máy mở lại)
+Vì các container đã được tạo sẵn từ lần chạy đầu tiên, bạn chỉ cần dùng lệnh start để đánh thức hệ thống dậy cho nhanh:
+
+sudo docker start mysql-server n8n
+sudo docker ps
+
+Bước 2: Khởi chạy Core Backend
+Mở thư mục dự án bằng IntelliJ IDEA.
+Kiểm tra file src/main/resources/application.properties, đảm bảo kết nối Database đang trỏ về:
+spring.datasource.url=jdbc:mysql://localhost:3306/delivery_db
+Nhấn nút Run để khởi động Spring Boot Application.
+
+Bước 3: Truy cập và Sử dụng
+Sau khi tất cả các dịch vụ đã chạy thành công, truy cập các đường dẫn sau:
+Giao diện đặt hàng (Web): http://localhost:8080
+Hệ thống tự động hóa (n8n): http://localhost:5678
+
+Lệnh hữu ích cho Database (Dành cho Developer)
+Để kiểm tra trực tiếp dữ liệu đơn hàng đã được luân chuyển hay chưa, chạy lệnh sau để truy cập vào MySQL trong Docker:
+Bash
+
+sudo docker exec -it mysql-server mysql -u root -p
