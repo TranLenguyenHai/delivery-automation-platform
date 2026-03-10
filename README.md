@@ -37,16 +37,5 @@ Dự án được chia thành các giai đoạn phối hợp song song giữa Co
 ## Hướng dẫn khởi chạy (How to Run)
 Hệ thống yêu cầu máy chủ Linux có cài đặt sẵn Docker. Chạy các lệnh sau tại Terminal để khởi động các service ngầm:
 
-**Bước 1: Khởi chạy Database MySQL**
-Chạy lệnh sau để khởi động MySQL, mở port 3306 và tạo sẵn database `delivery_db`. Dữ liệu được lưu trữ an toàn qua Docker Volume.
-```bash
-sudo docker run -d --name mysql-server -p 3306:3306 -v mysql_data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=123456 -e MYSQL_DATABASE=delivery_db mysql:latest
-
-** Bước 2: Khởi chạy Tự động hóa n8n
-Chạy lệnh sau để khởi động n8n core. Dữ liệu workflow được bảo lưu qua Volume.
-sudo docker run -d --name n8n --restart unless-stopped -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
-** Bước 3: Khởi chạy Core Backend
-Clone repository này về máy.
-Mở thư mục code bằng IntelliJ IDEA.
-Cấu hình file application.properties để trỏ vào MySQL ở Bước 1.
-Chạy project Spring Boot và truy cập giao diện Web.
+Bước 1: Khởi động hệ thống nền (Database & Automation Engine)
+Mở Terminal tại thư mục gốc của dự án (nơi chứa file docker-compose.yml) và chạy lệnh sau để khởi động đồng thời MySQL và n8n ở chế độ ngầm:
