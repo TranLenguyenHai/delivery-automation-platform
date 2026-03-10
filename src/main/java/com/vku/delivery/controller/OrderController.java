@@ -6,47 +6,57 @@ import com.vku.delivery.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
 
     @Autowired
-    private OrderService orderService; // Kêu gọi Anh Quản Lý ra làm việc
+    private OrderService orderService;
 
     @PostMapping("/create")
     public String createOrder(@RequestBody OrderRequest request) {
         System.out.println("=====================================");
-        System.out.println("🎉 ĐÃ NHẬN ĐƯỢC ĐƠN HÀNG MỚI TỪ WEB!");
-        System.out.println("Khách hàng: " + request.getCustomerName());
-        System.out.println("SĐT: " + request.getCustomerPhone());
-        System.out.println("Cân nặng: " + request.getPackageWeight() + " gram");
-        System.out.println("=====================================");
+        System.out.println("🎉 NHẬN ĐƠN HÀNG MỚI: " + request.getCustomerName());
 
         // --- BƯỚC 1: LƯU VÀO DATABASE TRƯỚC ---
         Order newOrder = new Order();
         newOrder.setCustomerName(request.getCustomerName());
         newOrder.setCustomerPhone(request.getCustomerPhone());
-        newOrder.setAddress(request.getDeliveryAddress()); // Phiên dịch tên biến cho khớp
+        newOrder.setAddress(request.getDeliveryAddress());
         newOrder.setPackageWeight(request.getPackageWeight());
 
-        // Gọi Anh Quản Lý cất vào kho (Nó sẽ tự gán trạng thái PENDING)
-        orderService.createOrder(newOrder);
-        System.out.println("💾 Đã lưu đơn hàng thành công vào Database MySQL!");
+        // Mày nhớ bảo thằng Thái thêm trường này vào OrderRequest/Entity nếu chưa có nhé
+        // newOrder.setDistanceKm(request.getDistanceKm());
 
-        // --- BƯỚC 2: BẮN WEBHOOK CHO N8N ---
+        // Lưu đơn hàng để lấy được cái ID tự tăng từ MySQL
+        Order savedOrder = orderService.createOrder(newOrder);
+        System.out.println("💾 Đã lưu DB, ID đơn hàng là: " + savedOrder.getId());
+
+        // --- BƯỚC 2: BẮN WEBHOOK CHO N8N (LINK PRODUCTION) ---
         try {
             RestTemplate restTemplate = new RestTemplate();
-            // Link Webhook n8n của bạn
-            String n8nWebhookUrl = "http://localhost:5678/webhook-test/2322cc2e-b5ee-4be9-a79a-dfd29a0a3b93";
 
-            restTemplate.postForEntity(n8nWebhookUrl, request, String.class);
+            // ĐÃ ĐỔI SANG LINK PRODUCTION (Bỏ chữ -test)
+            String n8nWebhookUrl = "http://localhost:5678/webhook/2322cc2e-b5ee-4be9-a79a-dfd29a0a3b93";
 
-            System.out.println("✅ ĐÃ BẮN TÍN HIỆU THÀNH CÔNG SANG N8N!");
-            return "Tuyệt vời! Đơn hàng đã được lưu DB và bắn thành công sang n8n!";
+            // Tạo cục JSON chuẩn để n8n đọc được
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("order_id", savedOrder.getId()); // Quan trọng để n8n biết đơn nào mà Update
+            payload.put("packageWeight", savedOrder.getPackageWeight());
+            payload.put("distanceKm", request.getDistanceKm()); // Giả sử request có trường này
+            payload.put("customerName", savedOrder.getCustomerName());
+
+            restTemplate.postForEntity(n8nWebhookUrl, payload, String.class);
+
+            System.out.println("✅ ĐÃ GỬI SANG N8N ĐỂ TÍNH GIÁ TỰ ĐỘNG!");
+            return "Đã nhận đơn ID: " + savedOrder.getId() + ". Đang tính toán giá cước...";
+
         } catch (Exception e) {
-            System.out.println("❌ Lỗi khi bắn sang n8n: " + e.getMessage());
-            return "Cảnh báo: Đã lưu Database thành công, nhưng n8n đang tắt hoặc lỗi mạng.";
+            System.err.println("❌ Lỗi gọi n8n: " + e.getMessage());
+            return "Lưu DB ok nhưng lỗi gọi n8n: " + e.getMessage();
         }
     }
 }
