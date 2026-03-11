@@ -1,32 +1,46 @@
 package com.vku.delivery.dto;
 
 public class OrderRequest {
-    private String customerName;
-    private String customerPhone;
-    private String deliveryAddress;
-    private Integer packageWeight;
+
+    private String senderName;
+    private String senderPhone;
+    private String senderAddress;
+    private String receiverName;
+    private String receiverPhone;
+    private String receiverAddress;
+    private String productName;
+    private Integer weight;
+    private Double distance;
     private String note;
-    private Double distanceKm;
 
-    // Dưới đây là các hàm Get/Set để Spring Boot tự động đọc được dữ liệu
-    public String getCustomerName() { return customerName; }
-    public void setCustomerName(String customerName) { this.customerName = customerName; }
+    // --- TẤT CẢ GETTER & SETTER Ở ĐÂY ---
+    public String getSenderName() { return senderName; }
+    public void setSenderName(String senderName) { this.senderName = senderName; }
 
-    public String getCustomerPhone() { return customerPhone; }
-    public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
+    public String getSenderPhone() { return senderPhone; }
+    public void setSenderPhone(String senderPhone) { this.senderPhone = senderPhone; }
 
-    public String getDeliveryAddress() { return deliveryAddress; }
-    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
+    public String getSenderAddress() { return senderAddress; }
+    public void setSenderAddress(String senderAddress) { this.senderAddress = senderAddress; }
 
-    public Integer getPackageWeight() { return packageWeight; }
-    public void setPackageWeight(Integer packageWeight) { this.packageWeight = packageWeight; }
+    public String getReceiverName() { return receiverName; }
+    public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
+
+    public String getReceiverPhone() { return receiverPhone; }
+    public void setReceiverPhone(String receiverPhone) { this.receiverPhone = receiverPhone; }
+
+    public String getReceiverAddress() { return receiverAddress; }
+    public void setReceiverAddress(String receiverAddress) { this.receiverAddress = receiverAddress; }
+
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+
+    public Integer getWeight() { return weight; }
+    public void setWeight(Integer weight) { this.weight = weight; }
+
+    public Double getDistance() { return distance; }
+    public void setDistance(Double distance) { this.distance = distance; }
 
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
-    public Double getDistanceKm() {
-        return distanceKm;
-    }
-    public void setDistanceKm(Double distanceKm) {
-        this.distanceKm = distanceKm;
-    }
 }

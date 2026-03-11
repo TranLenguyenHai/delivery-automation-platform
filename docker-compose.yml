@@ -21,3 +21,5 @@ services:
       - "5678:5678"
     environment:
       - N8N_HOST=localhost
+    volumes:
+      n8n_data:

@@ -10,43 +10,76 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "customer_name")
-    private String customerName;
+    @Column(name = "sender_name")
+    private String senderName;
 
-    @Column(name = "customer_phone")
-    private String customerPhone;
+    @Column(name = "sender_phone")
+    private String senderPhone;
 
-    private String address;
+    @Column(name = "sender_address")
+    private String senderAddress;
 
-    @Column(name = "packageWeight")
-    private Integer packageWeight;
+    @Column(name = "receiver_name")
+    private String receiverName;
+
+    @Column(name = "receiver_phone")
+    private String receiverPhone;
+
+    @Column(name = "receiver_address")
+    private String receiverAddress;
+
+    @Column(name = "product_name")
+    private String productName;
+
+    @Column(name = "weight")
+    private Integer weight;
+
+    @Column(name = "distance_km")
+    private Double distanceKm;
+
+    @Column(name = "note") // Tớ đã thêm cột Note này vào Database cho bạn
+    private String note;
 
     private String status = "PENDING";
-
     private String shipper;
 
-    // Cột mới đẻ thêm để cho Hải lưu kết quả "giá rẻ nhất"
     @Column(name = "shipping_fee")
     private Integer shippingFee;
 
-    // --- GETTER VÀ SETTER ---
-    // (Nếu đồ án của bạn có cài thư viện Lombok thì chỉ cần thêm @Data ở trên cùng,
-    // còn nếu không dùng Lombok thì bạn nhấn Alt + Insert để Generate tự động Getter/Setter ra nhé)
-
+    // --- TẤT CẢ GETTER & SETTER ---
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
-    public String getCustomerName() { return customerName; }
-    public void setCustomerName(String customerName) { this.customerName = customerName; }
+    public String getSenderName() { return senderName; }
+    public void setSenderName(String senderName) { this.senderName = senderName; }
 
-    public String getCustomerPhone() { return customerPhone; }
-    public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
+    public String getSenderPhone() { return senderPhone; }
+    public void setSenderPhone(String senderPhone) { this.senderPhone = senderPhone; }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public String getSenderAddress() { return senderAddress; }
+    public void setSenderAddress(String senderAddress) { this.senderAddress = senderAddress; }
 
-    public Integer getPackageWeight() { return packageWeight; }
-    public void setPackageWeight(Integer packageWeight) { this.packageWeight = packageWeight; }
+    public String getReceiverName() { return receiverName; }
+    public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
+
+    public String getReceiverPhone() { return receiverPhone; }
+    public void setReceiverPhone(String receiverPhone) { this.receiverPhone = receiverPhone; }
+
+    public String getReceiverAddress() { return receiverAddress; }
+    public void setReceiverAddress(String receiverAddress) { this.receiverAddress = receiverAddress; }
+
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+
+    public Integer getWeight() { return weight; }
+    public void setWeight(Integer weight) { this.weight = weight; }
+
+    public Double getDistanceKm() { return distanceKm; }
+    public void setDistanceKm(Double distanceKm) { this.distanceKm = distanceKm; }
+
+    // Thêm Getter & Setter cho Note để Controller gọi được
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

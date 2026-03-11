@@ -1,0 +1,467 @@
+{
+  "name": "Cước Phí",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        192,
+        80
+      ],
+      "id": "4321ea29-1db2-4524-aece-b62b78f20853",
+      "name": "Merge 1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        304,
+        288
+      ],
+      "id": "63b8f846-1c9f-4236-8a8f-daa81ceb20ac",
+      "name": "Merge 2"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "giaCuoc"
+            }
+          ]
+        },
+        "options": {
+          "disableDotNotation": false
+        }
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        512,
+        288
+      ],
+      "id": "87d21b7a-df03-4f4c-b98d-2b72887374d9",
+      "name": "Sort"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        704,
+        288
+      ],
+      "id": "35e22b15-7698-4801-86ee-5ab497a5601b",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "885c1b5a-b12c-41bf-be54-cc7ad4985c76",
+              "name": "tenHang",
+              "value": "Viettel Post",
+              "type": "string"
+            },
+            {
+              "id": "83bb39c7-c133-4fd1-a8ee-18241567d22c",
+              "name": "giaCuoc",
+              "value": "={{ 20000 + ($json.body.weight/ 1000 * 4000) + ($json.body.distance* 1000) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1d22d619-f2b1-48af-90a3-ce299800c7b9",
+      "name": "Viettel Post"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b9f50a48-a503-4d6b-9e29-471dd9856a22",
+              "name": "tenHang",
+              "value": "GHTK",
+              "type": "string"
+            },
+            {
+              "id": "5116afea-0ce1-4825-bac6-66b33d3cf1b1",
+              "name": "giaCuoc",
+              "value": "={{ 15000 + ($json.body.weight/ 1000 * 5000) + ($json.body.distance* 2000) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": "={{ true }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        160
+      ],
+      "id": "33188016-d48a-4825-9b16-e1e89082aaa2",
+      "name": "GHTK"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5515ddbc-3d0d-4a16-a55c-9fc510f70539",
+              "name": "tenHang",
+              "value": "Ahamove",
+              "type": "string"
+            },
+            {
+              "id": "e73f0da1-bfa9-40eb-8914-58c47404e11d",
+              "name": "giaCuoc",
+              "value": "={{ 25000 + ($json.body.weight/ 1000 * 2000) + ($json.body.distance* 3000) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        304
+      ],
+      "id": "b8c6c36a-ad3d-40ed-b5cc-d68dc0b70270",
+      "name": "Ahamove"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "72d7961a-5b7b-4b4e-b0c6-2f3c25e2d46c",
+              "leftValue": "={{ $json.body.weight }}",
+              "rightValue": 200000,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -192,
+        320
+      ],
+      "id": "e28e81cd-4379-40cc-8f54-4d2266e2f5df",
+      "name": "(If)Kiểm Tra Cân Nặng"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a6802cc3-47f1-4be3-ba2e-1e3907871e08",
+              "name": "status",
+              "value": "Đơn hàng quá tải (trên 100kg), vui lòng liên hệ xe tải riêng để vận chuyển",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        512
+      ],
+      "id": "cc8f082c-fbf8-4a39-bd50-ec557a085b5d",
+      "name": "Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d672a4c8-767c-4647-bdc8-08adf63026a2",
+              "leftValue": "={{ $json.body.weight }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "85f7273e-2315-4c6c-8c77-c7330baca6a0",
+              "leftValue": "={{ $json.body.distance }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -416,
+        336
+      ],
+      "id": "2bfd1dca-bad2-4a7b-be14-2e4c27c8b181",
+      "name": "Kiểm Tra Đầu Vào"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "00047b7d-0ca2-4c40-b871-f9658561ed19",
+              "name": "status",
+              "value": "Lỗi hệ thống: Vui lòng kiểm tra lại dữ liệu nhập",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        512
+      ],
+      "id": "0a70583f-010d-4358-be4e-2fffd80c7010",
+      "name": "Error1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e99d1f26-3a52-49d9-93e5-ed402977fcb6",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -672,
+        336
+      ],
+      "id": "2c030017-c9ba-46c0-85fc-6fcff01dc4c5",
+      "name": "Webhook",
+      "webhookId": "e99d1f26-3a52-49d9-93e5-ed402977fcb6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f15d0a97-edb3-47fc-97b2-2ecfbaeff0a7",
+              "name": "shipper",
+              "value": "={{ $json.tenHang }}",
+              "type": "string"
+            },
+            {
+              "id": "4f184b7f-7b86-49fc-827b-681323765fb3",
+              "name": "fee",
+              "value": "={{ $json.giaCuoc }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        912,
+        288
+      ],
+      "id": "7274d635-2496-4ef5-abb9-9bf761b254c0",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge 1": {
+      "main": [
+        [
+          {
+            "node": "Merge 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge 2": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Viettel Post": {
+      "main": [
+        [
+          {
+            "node": "Merge 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GHTK": {
+      "main": [
+        [
+          {
+            "node": "Merge 1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Ahamove": {
+      "main": [
+        [
+          {
+            "node": "Merge 2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "(If)Kiểm Tra Cân Nặng": {
+      "main": [
+        [
+          {
+            "node": "Ahamove",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Viettel Post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GHTK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kiểm Tra Đầu Vào": {
+      "main": [
+        [
+          {
+            "node": "(If)Kiểm Tra Cân Nặng",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Kiểm Tra Đầu Vào",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "14d6087a-07a0-48d8-aa0e-d65b047ba7f9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1a4824b5cfb5ac194ee48e9b6b6d5635c03af003d426273352409b077fe274f6"
+  },
+  "id": "wiJqtDvsojL8p8Nn",
+  "tags": []
+}

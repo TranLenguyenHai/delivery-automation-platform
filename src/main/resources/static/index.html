@@ -3,53 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nền Tảng Tối Ưu Chi Phí Giao Hàng</title>
+    <title>Tạo Đơn Hàng</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f4f7f6; }
-        .card { border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .header-title { color: #0d6efd; font-weight: bold; }
+        .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
+        .section-title { color: #0d6efd; font-size: 1.1rem; font-weight: bold; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 16px; margin-top: 24px; }
+        .header-title { color: #2c3e50; font-weight: 800; }
     </style>
 </head>
 <body>
 
-<div class="container mt-5">
+<div class="container mt-4 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card p-4">
-                <h3 class="text-center header-title mb-4">📦 HỆ THỐNG ĐẶT ĐƠN GIAO HÀNG</h3>
-                <p class="text-center text-muted">Hệ thống của Thái & Hải - Tự động hóa Logi</p>
+                <h2 class="text-center header-title mb-1">TẠO ĐƠN HÀNG</h2>
+                <p class="text-center text-muted mb-4">Hệ thống tối ưu chi phí giao hàng</p>
 
                 <form id="orderForm">
+
+                    <div class="section-title">📍 Thông tin Người Gửi</div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Tên người nhận</label>
-                            <input type="text" class="form-control" id="customerName" placeholder="Ví dụ: Nguyễn Văn A" required>
+                            <label class="form-label fw-bold">Tên người gửi</label>
+                            <input type="text" class="form-control" id="senderName" placeholder="" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Số điện thoại</label>
-                            <input type="text" class="form-control" id="customerPhone" placeholder="Ví dụ: 0905123456" required>
+                            <input type="text" class="form-control" id="senderPhone" placeholder="" required>
                         </div>
                     </div>
-
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Địa chỉ giao hàng</label>
-                        <input type="text" class="form-control" id="deliveryAddress" placeholder="Số nhà, tên đường, quận/huyện..." required>
+                        <label class="form-label fw-bold">Địa chỉ lấy hàng</label>
+                        <input type="text" class="form-control" id="senderAddress" placeholder="" required>
                     </div>
 
+                    <div class="section-title">🏠 Thông tin Người Nhận</div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Khối lượng (gram)</label>
-                            <input type="number" class="form-control" id="packageWeight" placeholder="Ví dụ: 500" required>
+                            <label class="form-label fw-bold">Tên người nhận</label>
+                            <input type="text" class="form-control" id="receiverName" placeholder="" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Ghi chú</label>
-                            <input type="text" class="form-control" id="note" placeholder="Hàng dễ vỡ, giao giờ hành chính...">
+                            <label class="form-label fw-bold">Số điện thoại</label>
+                            <input type="text" class="form-control" id="receiverPhone" placeholder="" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Địa chỉ giao hàng</label>
+                        <input type="text" class="form-control" id="receiverAddress" placeholder="" required>
+                    </div>
+
+                    <div class="section-title">📦 Thông tin Hàng Hóa</div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Tên sản phẩm</label>
+                            <input type="text" class="form-control" id="productName" placeholder="" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Khối lượng (gram)</label>
+                            <input type="number" class="form-control" id="packageWeight" placeholder="" required>
                         </div>
                     </div>
 
-                    <div class="d-grid mt-4">
-                        <button type="button" id="submitBtn" class="btn btn-primary btn-lg fw-bold">🔍 TÌM GIÁ RẺ NHẤT & LÊN ĐƠN</button>
+                    <div class="p-3 mb-4 bg-light rounded border">
+                        <label class="form-label fw-bold text-danger">Khoảng cách di chuyển (km)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" id="distance" placeholder="Nhập tay hoặc bấm nút để tự tính..." required>
+                            <button class="btn btn-outline-danger" type="button" id="calcDistanceBtn">Tự động đo 🚀</button>
+                        </div>
+                        <small class="text-muted mt-1 d-block" id="distanceStatus">Bấm "Tự động đo" hệ thống sẽ ước tính khoảng cách giữa 2 địa chỉ.</small>
+                    </div>
+
+                    <div class="d-grid mt-2">
+                        <button type="button" id="submitBtn" class="btn btn-primary btn-lg fw-bold">🔍 TÌM KIẾM </button>
                     </div>
                 </form>
 
@@ -59,51 +87,89 @@
 </div>
 
 <script>
-    document.getElementById("submitBtn").addEventListener("click", function() {
-        console.log("🚀 Đang xử lý gửi đơn hàng...");
+    // --- HÀM 1: GỌI API MIỄN PHÍ ĐỂ TÍNH KHOẢNG CÁCH ---
+    document.getElementById("calcDistanceBtn").addEventListener("click", async function() {
+        const senderAddr = document.getElementById("senderAddress").value.trim();
+        const receiverAddr = document.getElementById("receiverAddress").value.trim();
+        const statusText = document.getElementById("distanceStatus");
 
-        // 1. Lấy dữ liệu từ các ô nhập liệu
-        const name = document.getElementById('customerName').value;
-        const phone = document.getElementById('customerPhone').value;
-        const address = document.getElementById('deliveryAddress').value;
-        const weight = document.getElementById('packageWeight').value;
-        const note = document.getElementById('note').value;
-
-        // Kiểm tra xem Thái có nhập thiếu thông tin không
-        if (!name || !phone || !address || !weight) {
-            alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+        if (!senderAddr || !receiverAddr) {
+            alert("Vui lòng nhập đầy đủ 'Địa chỉ lấy hàng' và 'Địa chỉ giao hàng' trước khi đo!");
             return;
         }
 
-        const orderData = {
-            customerName: name,
-            customerPhone: phone,
-            deliveryAddress: address,
-            packageWeight: parseInt(weight),
-            note: note
+        statusText.innerHTML = "⏳ Đang tính toán tọa độ...";
+        statusText.className = "text-warning mt-1 d-block";
+
+        try {
+            // Bước 1: Lấy tọa độ điểm Gửi
+            const res1 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(senderAddr)}`);
+            const data1 = await res1.json();
+            if (data1.length === 0) throw new Error("Không tìm thấy địa chỉ Người gửi trên bản đồ.");
+            const lon1 = data1[0].lon, lat1 = data1[0].lat;
+
+            // Bước 2: Lấy tọa độ điểm Nhận
+            const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(receiverAddr)}`);
+            const data2 = await res2.json();
+            if (data2.length === 0) throw new Error("Không tìm thấy địa chỉ Người nhận trên bản đồ.");
+            const lon2 = data2[0].lon, lat2 = data2[0].lat;
+
+            // Bước 3: Tính khoảng cách đường bộ bằng OSRM
+            statusText.innerHTML = "⏳ Đang đo khoảng cách đường đi...";
+            const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`);
+            const routeData = await routeRes.json();
+
+            if (routeData.code !== "Ok") throw new Error("Không thể tính tuyến đường giữa 2 điểm này.");
+
+            // Kết quả trả về là mét -> Đổi sang km và làm tròn 1 chữ số thập phân
+            const distanceKm = (routeData.routes[0].distance / 1000).toFixed(1);
+
+            document.getElementById("distance").value = distanceKm;
+            statusText.innerHTML = `✅ Đo thành công: ${distanceKm} km.`;
+            statusText.className = "text-success mt-1 d-block";
+
+        } catch (error) {
+            console.error(error);
+            statusText.innerHTML = `❌ Lỗi: ${error.message} Vui lòng nhập rõ địa chỉ (Thêm Tỉnh/Thành phố) hoặc tự điền tay vào ô trên.`;
+            statusText.className = "text-danger mt-1 d-block";
+        }
+    });
+
+    // --- HÀM 2: GỬI DỮ LIỆU ĐẶT ĐƠN VỀ JAVA SPRING BOOT ---
+    document.getElementById("submitBtn").addEventListener("click", function() {
+        const payload = {
+            senderName: document.getElementById('senderName').value.trim(),
+            senderPhone: document.getElementById('senderPhone').value.trim(),
+            senderAddress: document.getElementById('senderAddress').value.trim(),
+            receiverName: document.getElementById('receiverName').value.trim(),
+            receiverPhone: document.getElementById('receiverPhone').value.trim(),
+            receiverAddress: document.getElementById('receiverAddress').value.trim(),
+            productName: document.getElementById('productName').value.trim(),
+            weight: parseInt(document.getElementById('packageWeight').value),
+            distance: parseFloat(document.getElementById('distance').value)
         };
 
-        // 2. Gửi dữ liệu xuống Java Backend
-        // Lưu ý: Dùng đường dẫn tương đối để tránh lỗi CORS khi chạy trên cùng server
+        // Kiểm tra validation cơ bản
+        if (!payload.senderName || !payload.receiverName || isNaN(payload.weight) || isNaN(payload.distance)) {
+            alert("Vui lòng điền đủ thông tin và tính quãng đường trước khi lên đơn!");
+            return;
+        }
+
+        console.log("Dữ liệu gửi đi:", payload);
+
+        // Bắn API về Backend (Cần cập nhật Java DTO để khớp với cục payload này)
         fetch('/api/orders/create', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(orderData)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         })
-        .then(response => response.text())
-        .then(data => {
-            // Hiển thị thông báo thành công
-            alert("KẾT QUẢ: " + data);
-
-            // Xóa sạch form sau khi đặt thành công để đặt đơn mới
-            document.getElementById("orderForm").reset();
-        })
-        .catch(error => {
-            console.error("Lỗi:", error);
-            alert("Có lỗi xảy ra khi kết nối đến Server Java!");
-        });
+            .then(res => res.text())
+            .then(data => {
+                alert("✅ KẾT QUẢ TỪ HỆ THỐNG: \n" + data);
+            })
+            .catch(err => {
+                alert("❌ Không thể kết nối tới Server Spring Boot!");
+            });
     });
 </script>
 
