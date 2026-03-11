@@ -3,7 +3,7 @@
 **Môn học:** Chuyên đề 2 (IT) - Low code, No code & Automation
 
 ## Giới thiệu dự án (Project Overview)
-Dự án này xây dựng một nền tảng tự động hóa nhằm tối ưu hóa chi phí vận chuyển (Delivery Cost Optimization). Hệ thống tiếp nhận thông tin đơn hàng, tự động truy vấn giá cước từ nhiều đơn vị vận chuyển khác nhau (GHN, GHTK, Viettel Post,...), so sánh và lựa chọn đối tác có chi phí thấp nhất để tiến hành giao hàng.
+Dự án này xây dựng một nền tảng tự động hóa nhằm tối ưu hóa chi phí vận chuyển (Delivery Cost Optimization). Hệ thống tiếp nhận thông tin đơn hàng, tự động truy vấn giá cước từ nhiều đơn vị vận chuyển khác nhau (GHN, GHTK, Viettel Post,...), so sánh và lựa chọn đối tác có chi phí thấp nhất để tiến hành giao hàng, báo cáo tổng đơn hàng, gửi mail báo cáo tiến độ.
 
 Điểm nổi bật của dự án là việc ứng dụng **Kiến trúc Lai (Hybrid Architecture)**, kết hợp giữa phát triển phần mềm truyền thống cho Core Backend và tư duy **Low-code/No-code** cho quy trình tự động hóa. Hệ thống được triển khai thực tế trên môi trường máy chủ **Linux**, bám sát tiêu chuẩn vận hành Microservices của doanh nghiệp hiện đại.
 
