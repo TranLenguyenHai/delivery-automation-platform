@@ -1,0 +1,245 @@
+{
+  "name": "Điều phôi kho Giao Hàng",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtMinute": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b5ccd086-1de7-4c3b-bc1f-68d93deaa4c8",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM orders WHERE status = 'PENDING';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c10c6a5d-72d8-4d23-a199-93d68085b5c7",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "mySql": {
+          "id": "v11D932eBRE84CgQ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "63e5ae78-dff6-4328-ab4d-c619095799e1",
+              "leftValue": "={{ $json.weight }}",
+              "rightValue": 1000,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "1a40ba50-7b52-4d58-87d5-25a2e9b243dd",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2ec6c5b2-5ece-4db7-912a-4faf4e48c790",
+              "name": "shipper",
+              "value": "Giao Hang Tiet Kiem",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -208
+      ],
+      "id": "cb8fec15-8077-48c6-8675-ac621ab529b9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a8395eea-6b4d-483f-b519-389db2b12e3f",
+              "name": "shipper",
+              "value": "Viettel Post",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        208
+      ],
+      "id": "7bc95676-f116-471a-8762-1323448e17b6",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "2e8b3c36-d709-40ee-8561-60dfaa2e3d6a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders SET status = 'DELIVERING', shipper = '{{ $json.shipper }}' WHERE id = {{ $json.id }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "62d1a65f-502e-4dfa-a8ff-7e5df0401c62",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "mySql": {
+          "id": "v11D932eBRE84CgQ",
+          "name": "MySQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "35df1194-c995-43e8-af8f-f8d694d5a446",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6b96901c6a8f53cde4aeb9ec81d0d8f066cc30ec7281146839f9f5e0ff3f7af5"
+  },
+  "id": "b4TAhXAKLByAf5q1",
+  "tags": []
+}
