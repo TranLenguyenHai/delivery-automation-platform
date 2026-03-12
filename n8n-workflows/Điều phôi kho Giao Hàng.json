@@ -14,8 +14,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        0,
-        0
+        -976,
+        48
       ],
       "id": "b5ccd086-1de7-4c3b-bc1f-68d93deaa4c8",
       "name": "Schedule Trigger"
@@ -29,8 +29,8 @@
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        208,
-        0
+        -768,
+        48
       ],
       "id": "c10c6a5d-72d8-4d23-a199-93d68085b5c7",
       "name": "Execute a SQL query",
@@ -68,8 +68,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        416,
-        0
+        112,
+        48
       ],
       "id": "1a40ba50-7b52-4d58-87d5-25a2e9b243dd",
       "name": "If"
@@ -86,12 +86,13 @@
             }
           ]
         },
+        "includeOtherFields": true,
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        720,
+        496,
         -208
       ],
       "id": "cb8fec15-8077-48c6-8675-ac621ab529b9",
@@ -109,13 +110,14 @@
             }
           ]
         },
+        "includeOtherFields": true,
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        720,
-        208
+        496,
+        -64
       ],
       "id": "7bc95676-f116-471a-8762-1323448e17b6",
       "name": "Edit Fields1"
@@ -125,8 +127,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1056,
-        0
+        880,
+        32
       ],
       "id": "2e8b3c36-d709-40ee-8561-60dfaa2e3d6a",
       "name": "Merge"
@@ -134,14 +136,14 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders SET status = 'DELIVERING', shipper = '{{ $json.shipper }}' WHERE id = {{ $json.id }};",
+        "query": "UPDATE orders SET status = 'DELIVERING', shipper = '{{ $json.shipper }}', shipping_fee = {{ $json.shipping_fee }} WHERE id = {{ $json.id }};",
         "options": {}
       },
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        1264,
-        0
+        992,
+        176
       ],
       "id": "62d1a65f-502e-4dfa-a8ff-7e5df0401c62",
       "name": "Execute a SQL query1",
@@ -149,6 +151,194 @@
         "mySql": {
           "id": "v11D932eBRE84CgQ",
           "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -528,
+        48
+      ],
+      "id": "6a4ce5c7-281e-459a-adf5-bb1a7c5f84ed",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e5f866b8-bab0-49d3-b7e3-e3b8fa8f079a",
+              "leftValue": "={{ $json.distance_km }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "4f649abd-6ea0-4b25-b84b-f88533930d18",
+              "leftValue": "={{ $json.packageWeight }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -336,
+        -208
+      ],
+      "id": "81cc1da5-39dd-4340-a95e-34bebae4e2e6",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "69a2cd38-ee04-43ee-aac4-709e42389511",
+              "name": "status",
+              "value": "CANCELLED",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        48
+      ],
+      "id": "53a05039-f298-48ba-9cb5-960d045c34d7",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04da323f-3317-47a3-81bf-b6c3656e1821",
+              "name": "shipping_fee",
+              "value": "={{ 15000 + ($json.distance_km * 5000) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        -304
+      ],
+      "id": "83cdf104-8da4-4457-8d94-748a3eb13b2a",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders SET status = 'CANCELLED' WHERE id = {{ $json.id }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        80,
+        -224
+      ],
+      "id": "14583718-b2be-4ce8-ac1a-49ab606076ce",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "mySql": {
+          "id": "v11D932eBRE84CgQ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 23
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1024,
+        448
+      ],
+      "id": "19d3a506-642b-4f75-932c-4a50bb80be14",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(id) as tong_don, IFNULL(SUM(shipping_fee), 0) as tong_tien FROM orders;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -752,
+        448
+      ],
+      "id": "157fa7d6-a250-41d8-8185-84d205c15b3a",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "mySql": {
+          "id": "v11D932eBRE84CgQ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "lehuuthai57@gmail.com",
+        "toEmail": "thailh.23ite@vku.udn.vn",
+        "subject": "Báo Cáo Cuối Ngày",
+        "html": "=<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 30px 10px;\">\n  <div style=\"max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-top: 6px solid #007bff;\">\n    \n    <h2 style=\"text-align: center; color: #2b2b2b; margin-bottom: 5px;\">📊 BÁO CÁO VẬN HÀNH</h2>\n    <p style=\"text-align: center; color: #888888; margin-top: 0; margin-bottom: 30px; font-size: 14px;\">Cập nhật cuối ngày từ Hệ thống Tự động</p>\n    \n    <p style=\"color: #444444; font-size: 16px;\">Chào Sếp,</p>\n    <p style=\"color: #444444; font-size: 16px; line-height: 1.6;\">Hệ thống n8n xin gửi báo cáo tổng hợp tình hình điều phối đơn hàng tính đến thời điểm hiện tại như sau:</p>\n\n    <div style=\"background: #f8f9fa; border: 1px solid #e9ecef; border-left: 5px solid #28a745; border-radius: 6px; padding: 20px; margin-bottom: 20px;\">\n      <p style=\"font-size: 15px; color: #6c757d; margin: 0; text-transform: uppercase; letter-spacing: 1px;\">📦 Tổng số đơn đã xử lý</p>\n      <p style=\"font-size: 32px; font-weight: bold; color: #28a745; margin: 10px 0 0 0;\">\n        {{ $json.tong_don }} <span style=\"font-size: 18px; font-weight: normal; color: #666;\">đơn</span>\n      </p>\n    </div>\n\n    <div style=\"background: #f8f9fa; border: 1px solid #e9ecef; border-left: 5px solid #ffc107; border-radius: 6px; padding: 20px; margin-bottom: 30px;\">\n      <p style=\"font-size: 15px; color: #6c757d; margin: 0; text-transform: uppercase; letter-spacing: 1px;\">💰 Tổng doanh thu cước phí</p>\n      <p style=\"font-size: 32px; font-weight: bold; color: #d39e00; margin: 10px 0 0 0;\">\n        {{ $json.tong_tien }} <span style=\"font-size: 18px; font-weight: normal; color: #666;\">VNĐ</span>\n      </p>\n    </div>\n\n    <p style=\"color: #444444; font-size: 16px; line-height: 1.6;\">Hệ thống vẫn đang tiếp tục giám sát và tự động điều phối 24/7. Chúc Sếp buổi tối vui vẻ!</p>\n    \n    <div style=\"text-align: center; margin-top: 40px; border-top: 1px dashed #dddddd; padding-top: 20px;\">\n      <p style=\"color: #aaaaaa; font-size: 12px; margin: 0;\">\n        <i>🚀 Gửi tự động từ <b>Delivery Automation Platform</b></i><br>\n        <i>Powered by n8n & Docker</i>\n      </p>\n    </div>\n\n  </div>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        448
+      ],
+      "id": "56c7fbf6-dd87-408b-b6bf-a41c1cc242aa",
+      "name": "Send an Email",
+      "webhookId": "d1fc92da-015a-4efa-b370-033ca3dde240",
+      "credentials": {
+        "smtp": {
+          "id": "7mQetV8Ou9vGmj3L",
+          "name": "SMTP account"
         }
       }
     }
@@ -170,7 +360,7 @@
       "main": [
         [
           {
-            "node": "If",
+            "node": "Loop Over Items",
             "type": "main",
             "index": 0
           }
@@ -227,6 +417,102 @@
           }
         ]
       ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -235,7 +521,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "35df1194-c995-43e8-af8f-f8d694d5a446",
+  "versionId": "921a1774-b163-4162-a758-98c015f76e26",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "6b96901c6a8f53cde4aeb9ec81d0d8f066cc30ec7281146839f9f5e0ff3f7af5"
