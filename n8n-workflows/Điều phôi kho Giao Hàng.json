@@ -23,7 +23,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * FROM orders WHERE status = 'PENDING';",
+        "query": "SELECT * FROM orders WHERE status = 'AI_PROCESSED';",
         "options": {}
       },
       "type": "n8n-nodes-base.mySql",
@@ -128,7 +128,7 @@
       "typeVersion": 3.2,
       "position": [
         880,
-        32
+        64
       ],
       "id": "2e8b3c36-d709-40ee-8561-60dfaa2e3d6a",
       "name": "Merge"
@@ -136,14 +136,14 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders SET status = 'DELIVERING', shipper = '{{ $json.shipper }}', shipping_fee = {{ $json.shipping_fee }} WHERE id = {{ $json.id }};",
+        "query": "UPDATE orders SET status = 'DELIVERING, shipper = '{{ $json.shipper }}', shipping_fee = {{ $json.shipping_fee }} WHERE id = {{ $json.id }};",
         "options": {}
       },
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        992,
-        176
+        1072,
+        64
       ],
       "id": "62d1a65f-502e-4dfa-a8ff-7e5df0401c62",
       "name": "Execute a SQL query1",
@@ -260,14 +260,14 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders SET status = 'CANCELLED' WHERE id = {{ $json.id }};",
+        "query": "UPDATE orders SET status = 'DELIVERING' WHERE id = {{ $json.id }};",
         "options": {}
       },
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
         80,
-        -224
+        -208
       ],
       "id": "14583718-b2be-4ce8-ac1a-49ab606076ce",
       "name": "Execute a SQL query2",
@@ -521,7 +521,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "921a1774-b163-4162-a758-98c015f76e26",
+  "versionId": "561096df-a2c1-4193-9996-671553b44b49",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "6b96901c6a8f53cde4aeb9ec81d0d8f066cc30ec7281146839f9f5e0ff3f7af5"
