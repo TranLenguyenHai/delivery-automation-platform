@@ -1,0 +1,354 @@
+{
+  "name": "AI Smart Logistics",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM orders ORDER BY id DESC LIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "f2c9d56f-db6e-4ebd-a068-1477eb10c4ff",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "mySql": {
+          "id": "v11D932eBRE84CgQ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Da Nang&appid=9fc4a547b9a7546e1156b51d33af4c8f&lang=vi&units=metric",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        96,
+        0
+      ],
+      "id": "e294e7b7-bdaa-4d96-97fc-3ba60a5495d1",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Bạn là hệ thống AI Điều phối Logistics.\nTôi có 1 đơn hàng với thông tin:\n- Ghi chú: \"{{ $('Execute a SQL query').item.json.note }}\"\n- Thời tiết: \"{{ $('HTTP Request').item.json.weather[0].description }}\"\n\nHãy trả về ĐÚNG 1 đoạn JSON (không giải thích) gồm 3 biến:\n1. \"tag\": Điền \"FRAGILE\" (nếu ghi chú nhắc đồ dễ vỡ/thủy tinh), \"URGENT\" (nếu giục gấp), \"NORMAL\" (nếu bình thường).\n2. \"weather_surcharge\": Điền 15000 nếu thời tiết có chữ \"mưa\" hoặc \"bão\". Nếu không điền 0.\n3. \"risk_surcharge\": Điền 50000 nếu tag là FRAGILE. Điền 20000 nếu tag là URGENT. Còn lại điền 0."
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        0
+      ],
+      "id": "4af1c4e4-6e1d-4eaf-b866-397180f63b0f",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pB239Xitu96EDBUs",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Lấy đoạn text mà AI vừa nhả ra\nlet rawText = $input.first().json.content.parts[0].text;\n\n// 2. Lọc bỏ mấy cái rác markdown\nrawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();\n\n// 3. Dịch đoạn text đó sang chuẩn JSON\nlet aiData = JSON.parse(rawText);\n\n// --- PHẦN THÊM MỚI ---\n// Lấy phí ship gốc (21k) từ cái Node SQL đầu tiên (nơi nó vừa đọc DB lên)\nlet phi_ship_goc = $('Execute a SQL query').first().json.shipping_fee || 0;\n\n// Tính tổng các loại phụ phí do AI bắt mạch (50k)\nlet tong_phu_phi = (aiData.weather_surcharge || 0) + (aiData.risk_surcharge || 0);\n\n// Tính TỔNG CHI PHÍ CUỐI CÙNG = Gốc + Phụ phí (21k + 50k = 71k)\nlet tong_chi_phi = phi_ship_goc + tong_phu_phi;\n\n// 4. Trả ra kết quả sạch bong kin kít\nreturn {\n    tag_phan_loai: aiData.tag,\n    phi_thoi_tiet: aiData.weather_surcharge || 0,\n    phi_rui_ro: aiData.risk_surcharge || 0,\n    tong_phu_phi: tong_phu_phi,\n    tong_chi_phi: tong_chi_phi  // <--- CÁI MÀ WEB ĐANG CẦN ĐÂY\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        0
+      ],
+      "id": "6a977ef6-3ebf-449e-9900-e83fa31d8250",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders \nSET shipping_fee = shipping_fee + {{ $node[\"Code in JavaScript\"].json[\"tong_phu_phi\"] }},\n    status = 'AI_PROCESSED',\n    note = CONCAT(note, \n                  ' | AI_TAG: ', '{{ $node[\"Code in JavaScript\"].json[\"tag_phan_loai\"] }}', \n                  ' | Thời tiết: ', '{{ $node[\"HTTP Request\"].json[\"weather\"][0][\"description\"] }}', \n                  ' (', {{ $node[\"HTTP Request\"].json[\"main\"][\"temp\"] }}, '°C)')\nWHERE id = {{ $('Execute a SQL query').item.json.id }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        0
+      ],
+      "id": "1148e62f-dde4-485e-b37b-9280b65dc09f",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "mySql": {
+          "id": "v11D932eBRE84CgQ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b3f14070-beed-4834-9921-2f3e56666de6",
+              "leftValue": "={{ $('Code in JavaScript').item.json.tag_phan_loai }}",
+              "rightValue": "NORMAL",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1104,
+        0
+      ],
+      "id": "8aec06e3-4523-4b03-8cfb-83ffe710a8dc",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b599e58-f8e0-4613-8235-a0370fa01bfb",
+              "name": "estimated_delivery",
+              "value": "3-5 ngày",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1312,
+        96
+      ],
+      "id": "a7e0d183-bab9-4ac1-90ce-47efd90cc1eb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders \nSET status = 'STANDARD_SHIPPING',\n    note = CONCAT(note, ' | AI_TAG: NORMAL')\nWHERE id = {{ $('Execute a SQL query').item.json.id }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1520,
+        96
+      ],
+      "id": "b4b0c10a-c68f-4de4-8e68-5e95a9cc836e",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "mySql": {
+          "id": "v11D932eBRE84CgQ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"ten_nguoi_nhan\": \"{{ $('Execute a SQL query').item.json.receiver_name }}\",\n  \"sdt_nhan\": \"{{ $('Execute a SQL query').item.json.receiver_phone }}\",\n  \"quang_duong\": \"{{ $('Execute a SQL query').item.json.distance_km }}\",\n  \"tinh_chat_hang\": \"{{ $node['Code in JavaScript'].json.tag_phan_loai }}\",\n  \"phi_de_vo\": \"{{ $('Code in JavaScript').item.json.phi_rui_ro }}\",\n  \"thoi_tiet\": \"{{ $node['HTTP Request'].json.weather[0].description }}\",\n  \"phi_thoi_tiet\": \"{{ $('Code in JavaScript').item.json.phi_thoi_tiet }}\",\n  \"tong_tien\": \"{{ $('Code in JavaScript').item.json.tong_chi_phi }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1312,
+        -96
+      ],
+      "id": "bff5c4df-6d9b-46ee-a28d-a16b493f033e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"status\": \"success\", \"ai_message\": \"Đơn hàng bình thường, không có phụ phí AI.\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1728,
+        96
+      ],
+      "id": "7ed5d682-4b2b-4c79-a99e-3dc6eabb16e6",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-logistic-trigger",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -336,
+        0
+      ],
+      "id": "87f576f0-60f7-4a3e-aac5-6478d3139811",
+      "name": "Webhook",
+      "webhookId": "7802664b-d69a-41d5-bdad-ffb08246eae6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "4c84da31-105a-410c-b3f3-cd4d775d4e66",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6b96901c6a8f53cde4aeb9ec81d0d8f066cc30ec7281146839f9f5e0ff3f7af5"
+  },
+  "id": "gAKFHkc09unS6H0j",
+  "tags": []
+}
