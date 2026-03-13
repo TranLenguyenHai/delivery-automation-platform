@@ -8,20 +8,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "*") // Cho phép giao diện Web gọi API không bị lỗi CORS
+@CrossOrigin(origins = "*")
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
 
-    // Đã cấu hình chạy thẳng link Production URL của n8n
+    // Webhook 1: Dùng để tính giá ship (Cái cũ cậu đang xài)
     private final String n8nWebhookUrl = "http://localhost:5678/webhook/e99d1f26-3a52-49d9-93e5-ed402977fcb6";
+
+    // Webhook 2: Dùng để bắn data sang Google Sheet (CÁI MỚI)
+    private final String n8nReportWebhookUrl = "http://localhost:5678/webhook/9102f4a1-7868-44a3-b33c-78114c981656";
 
     @PostMapping("/create")
     public ResponseEntity<?> createOrder(@RequestBody OrderRequest request) {
@@ -40,18 +45,12 @@ public class OrderController {
             boolean isConsolidated = false;
 
             if (existingOrderOpt.isPresent()) {
-                // TÌM THẤY ĐƠN CŨ -> GỘP ĐƠN
                 order = existingOrderOpt.get();
                 System.out.println("🔄 PHÁT HIỆN ĐƠN CŨ! Tiến hành gộp đơn ID: " + order.getId());
-
-                // Gộp khối lượng
                 order.setWeight(order.getWeight() + request.getWeight());
-                // Gộp tên sản phẩm
                 order.setProductName(order.getProductName() + " + " + request.getProductName());
-
                 isConsolidated = true;
             } else {
-                // KHÔNG TÌM THẤY -> TẠO ĐƠN MỚI
                 System.out.println("🆕 Không có đơn trùng, tạo đơn mới!");
                 order = new Order();
                 order.setSenderName(request.getSenderName());
@@ -66,7 +65,6 @@ public class OrderController {
                 order.setNote(request.getNote());
             }
 
-            // Lưu trạng thái chờ tính toán để chốt ID lưu DB
             order.setStatus("PENDING_CALCULATION");
             Order savedOrder = orderService.createOrder(order);
             System.out.println("✅ Đã lưu đơn hàng vào DB với ID: " + savedOrder.getId());
@@ -78,25 +76,39 @@ public class OrderController {
             payload.put("weight", savedOrder.getWeight());
             payload.put("distance", savedOrder.getDistanceKm());
 
-            System.out.println("🚀 Đang gửi tổng khối lượng " + savedOrder.getWeight() + "g sang n8n...");
+            System.out.println("🚀 Đang gửi tổng khối lượng " + savedOrder.getWeight() + "g sang n8n để tính phí...");
             ResponseEntity<Map> n8nResponse = restTemplate.postForEntity(n8nWebhookUrl, payload, Map.class);
             Map<String, Object> resultBody = n8nResponse.getBody();
 
             // --- BƯỚC 3: CẬP NHẬT KẾT QUẢ VÀ BÁO CÁO RA WEB ---
             if (resultBody != null && resultBody.containsKey("shipper") && resultBody.containsKey("fee")) {
                 savedOrder.setShipper(resultBody.get("shipper").toString());
-
-                // Ép kiểu phí ship về Integer cực kỳ thông minh
                 String feeStr = resultBody.get("fee").toString().replaceAll("[^\\d]", "");
                 savedOrder.setShippingFee(Integer.valueOf(feeStr));
-
                 savedOrder.setStatus("CALCULATED_SUCCESS");
 
-                // Lưu đè để cập nhật thông tin shipper và phí mới nhất
                 orderService.createOrder(savedOrder);
                 System.out.println("✅ Đã cập nhật giá từ n8n vào DB!");
 
-                // --- BƯỚC 4: RENDER CÂU THÔNG BÁO ---
+                // --- BƯỚC 4: BẮN DATA SANG N8N ĐỂ LƯU GOOGLE SHEET (PHẦN MỚI THÊM) ---
+                try {
+                    Map<String, Object> reportData = new HashMap<>();
+                    reportData.put("id_don", "DH" + savedOrder.getId());
+                    // Lấy thời gian thực của hệ thống
+                    reportData.put("thoi_gian", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                    reportData.put("ten_hang", savedOrder.getProductName());
+                    reportData.put("khoi_luong", savedOrder.getWeight());
+                    reportData.put("don_vi_giao", savedOrder.getShipper());
+                    reportData.put("phi_ship", savedOrder.getShippingFee());
+
+                    // Bắn sang Webhook Báo cáo
+                    restTemplate.postForEntity(n8nReportWebhookUrl, reportData, String.class);
+                    System.out.println("📊 Đã gửi báo cáo sang Google Sheet thành công!");
+                } catch (Exception e) {
+                    System.err.println("⚠️ Lỗi gửi báo cáo Google Sheet (Nhưng không ảnh hưởng đến tạo đơn): " + e.getMessage());
+                }
+
+                // --- BƯỚC 5: RENDER CÂU THÔNG BÁO ---
                 String successMsg;
                 if (isConsolidated) {
                     successMsg = String.format("✨ ĐÃ TỰ ĐỘNG GHÉP ĐƠN TIẾT KIỆM PHÍ!\nĐơn hàng được gộp vào ID: %d\nHàng hóa: %s\nTổng khối lượng: %d gram\nĐơn vị giao tối ưu: %s\nTổng phí ship: %,d VNĐ",
