@@ -12,7 +12,6 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    // Hàm nhận đơn hàng mới và lưu vào kho (Đã bỏ ghim cứng trạng thái để cập nhật được DB)
     public Order createOrder(Order order) {
         if (order.getStatus() == null) {
             order.setStatus("PENDING");
@@ -26,5 +25,15 @@ public class OrderService {
         return orderRepository.findFirstBySenderPhoneAndReceiverPhoneAndReceiverAddressAndStatusOrderByIdDesc(
                 senderPhone, receiverPhone, receiverAddress, "CALCULATED_SUCCESS"
         );
+    }
+
+    // Lấy đơn hàng theo ID để AI cập nhật
+    public Optional<Order> getOrderById(Integer id) {
+        return orderRepository.findById(id);
+    }
+
+    // Lấy đơn hàng mới nhất thay cho lệnh SQL LIMIT 1
+    public Order getLatestOrder() {
+        return orderRepository.findFirstByOrderByIdDesc();
     }
 }

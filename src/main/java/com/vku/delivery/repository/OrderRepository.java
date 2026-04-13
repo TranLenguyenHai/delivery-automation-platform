@@ -8,6 +8,9 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
+    // LẤY ĐƠN HÀNG MỚI NHẤT (THAY CHO LỆNH SQL: ORDER BY id DESC LIMIT 1)
+    Order findFirstByOrderByIdDesc();
+
     // TÍNH NĂNG GHÉP ĐƠN: Tìm đơn cũ chưa giao của cùng người gửi, người nhận và địa chỉ
     Optional<Order> findFirstBySenderPhoneAndReceiverPhoneAndReceiverAddressAndStatusOrderByIdDesc(
             String senderPhone, String receiverPhone, String receiverAddress, String status);

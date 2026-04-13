@@ -13,7 +13,6 @@ public class OrderRequest {
     private Double distance;
     private String note;
 
-    // --- TẤT CẢ GETTER & SETTER Ở ĐÂY ---
     public String getSenderName() { return senderName; }
     public void setSenderName(String senderName) { this.senderName = senderName; }
 

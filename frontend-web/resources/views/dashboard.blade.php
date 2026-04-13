@@ -81,7 +81,7 @@
 
                                                         <div class="invoice-row"><span class="label">👤 Khách hàng:</span><span class="value" id="inv-name">---</span></div>
                                                         <div class="invoice-row"><span class="label">📞 Điện thoại:</span><span class="value fw-bold text-primary" id="inv-phone">---</span></div>
-                                                        <div class="invoice-row"><span class="label">📍 Quãng đường:</span><span class="value" id="inv-distance">--- km</span>Km</div>
+                                                        <div class="invoice-row"><span class="label">📍 Quãng đường:</span><span class="value" id="inv-distance">--- km</span></div>
 
                                                         <div style="margin: 15px 0;">
                                                             <div class="invoice-row fee-row" id="row-fragile" style="display:none;">

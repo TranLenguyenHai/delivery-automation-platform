@@ -22,13 +22,10 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    // Webhook 1: Dùng để tính giá ship (Cái cũ cậu đang xài)
     private final String n8nWebhookUrl = "http://localhost:5678/webhook/e99d1f26-3a52-49d9-93e5-ed402977fcb6";
 
-    // Webhook 2: Dùng để bắn data sang Google Sheet (CÁI MỚI)
     private final String n8nReportWebhookUrl = "http://localhost:5678/webhook/9102f4a1-7868-44a3-b33c-78114c981656";
 
-    // Webhook 3: Workflow AI
     private final String n8nAIWebhookUrl = "http://localhost:5678/webhook-test/ai-logistic-trigger";
 
     @PostMapping("/create")
@@ -37,7 +34,7 @@ public class OrderController {
         System.out.println("🎉 NHẬN YÊU CẦU ĐẶT HÀNG TỪ: " + request.getSenderName());
 
         try {
-            // --- BƯỚC 1: TỰ ĐỘNG TÌM KIẾM ĐỂ GHÉP ĐƠN ---
+            // TỰ ĐỘNG TÌM KIẾM ĐỂ GHÉP ĐƠN
             Optional<Order> existingOrderOpt = orderService.findOrderToConsolidate(
                     request.getSenderPhone(),
                     request.getReceiverPhone(),
@@ -72,19 +69,19 @@ public class OrderController {
             Order savedOrder = orderService.createOrder(order);
             System.out.println("✅ Đã lưu đơn hàng vào DB với ID: " + savedOrder.getId());
 
-            // --- BƯỚC 2: GỌI SANG N8N ĐỂ TÍNH GIÁ SHIP MỚI ---
+            // GỌI SANG N8N ĐỂ TÍNH GIÁ SHIP MỚI
             RestTemplate restTemplate = new RestTemplate();
             Map<String, Object> payload = new HashMap<>();
             payload.put("orderId", savedOrder.getId());
             payload.put("weight", savedOrder.getWeight());
             payload.put("distance", savedOrder.getDistanceKm());
-            payload.put("note", savedOrder.getNote()); // Thêm note để dùng chung cho cả AI
+            payload.put("note", savedOrder.getNote());
 
             System.out.println("🚀 Đang gửi tổng khối lượng " + savedOrder.getWeight() + "g sang n8n để tính phí...");
             ResponseEntity<Map> n8nResponse = restTemplate.postForEntity(n8nWebhookUrl, payload, Map.class);
             Map<String, Object> resultBody = n8nResponse.getBody();
 
-            // --- BƯỚC 3: KIỂM TRA CHẶT CHẼ DỮ LIỆU TỪ N8N (Khôi phục logic cũ) ---
+            // KIỂM TRA  DỮ LIỆU TỪ N8N
             if (resultBody != null && resultBody.containsKey("shipper") && resultBody.containsKey("fee")) {
                 savedOrder.setShipper(resultBody.get("shipper").toString());
                 String feeStr = resultBody.get("fee").toString().replaceAll("[^\\d]", "");
@@ -94,7 +91,7 @@ public class OrderController {
                 orderService.createOrder(savedOrder);
                 System.out.println("✅ Đã cập nhật giá từ n8n vào DB!");
 
-                // --- BƯỚC 4: BẮN DATA SANG N8N ĐỂ LƯU GOOGLE SHEET ---
+                // BẮN DATA SANG N8N ĐỂ LƯU GOOGLE SHEET
                 try {
                     Map<String, Object> reportData = new HashMap<>();
                     reportData.put("id_don", "DH" + savedOrder.getId());
@@ -110,7 +107,7 @@ public class OrderController {
                     System.err.println("⚠️ Lỗi gửi báo cáo Google Sheet: " + e.getMessage());
                 }
 
-                // --- BƯỚC 5: RENDER CÂU THÔNG BÁO (Khôi phục câu đầy đủ cũ) ---
+                // RENDER CÂU THÔNG BÁO
                 String successMsg;
                 if (isConsolidated) {
                     successMsg = String.format("✨ ĐÃ TỰ ĐỘNG GHÉP ĐƠN TIẾT KIỆM PHÍ!\nĐơn hàng được gộp vào ID: %d\nHàng hóa: %s\nTổng khối lượng: %d gram\nĐơn vị giao tối ưu: %s\nTổng phí ship: %,d VNĐ",
@@ -120,7 +117,7 @@ public class OrderController {
                             savedOrder.getId(), savedOrder.getShipper(), savedOrder.getShippingFee());
                 }
 
-                // --- BƯỚC 6: [THÊM MỚI] GỌI AI ĐỂ PHÂN TÍCH ---
+                // [THÊM MỚI] GỌI AI ĐỂ PHÂN TÍCH
                 Object thongTinHoaDonAI = "Hệ thống AI đã ghi nhận đơn hàng.";
                 try {
                     System.out.println("🤖 Đang nhờ AI phân tích phụ phí...");
@@ -133,7 +130,7 @@ public class OrderController {
                     System.err.println("⚠️ AI chưa phản hồi: " + e.getMessage());
                 }
 
-                // --- BƯỚC 7: ĐÓNG GÓI TRẢ VỀ CHO WEB ---
+                // ĐÓNG GÓI TRẢ VỀ CHO WEB
                 Map<String, Object> responseData = new HashMap<>();
                 responseData.put("summary", successMsg);
                 responseData.put("ai_message", thongTinHoaDonAI);
@@ -141,7 +138,6 @@ public class OrderController {
                 return ResponseEntity.ok(responseData);
 
             } else {
-                // Nếu n8n cũ lỗi, chặn đứng luôn tại đây (Logic cũ)
                 return ResponseEntity.badRequest().body("Lỗi: n8n không trả về 'shipper' hoặc 'fee'.");
             }
 
@@ -149,6 +145,67 @@ public class OrderController {
             System.err.println("❌ Lỗi hệ thống: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("Lỗi Server: " + e.getMessage());
+        }
+    }
+
+    // ==========================================
+    // API NHẬN KẾT QUẢ TỪ N8N (AI VÀ THỜI TIẾT)
+    // ==========================================
+    @PutMapping("/{id}/ai-update")
+    public ResponseEntity<?> updateOrderFromAi(
+            @PathVariable Integer id,
+            @RequestBody com.vku.delivery.dto.AiUpdateOrderRequest request) {
+
+        System.out.println("🤖 N8N đang gọi API cập nhật AI cho đơn ID: " + id);
+
+        try {
+            Order order = orderService.getOrderById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng ID: " + id));
+
+            // 1. Cập nhật phụ phí (nếu có)
+            if (request.getAdditionalFee() != null && request.getAdditionalFee() > 0) {
+                Integer currentFee = order.getShippingFee() != null ? order.getShippingFee() : 0;
+                order.setShippingFee(currentFee + request.getAdditionalFee());
+                System.out.println("💰 Đã cộng thêm phụ phí: " + request.getAdditionalFee());
+            }
+
+            // 2. Cập nhật trạng thái
+            if (request.getStatus() != null && !request.getStatus().isEmpty()) {
+                order.setStatus(request.getStatus());
+            }
+
+            // 3. Nối thêm ghi chú (CONCAT)
+            if (request.getNoteAppend() != null && !request.getNoteAppend().isEmpty()) {
+                String currentNote = order.getNote() != null ? order.getNote() : "";
+                order.setNote(currentNote + request.getNoteAppend());
+            }
+
+            // Lưu lại vào DB
+            orderService.createOrder(order); // Dùng lại hàm createOrder của ông (bản chất save của JPA là tạo mới hoặc cập nhật)
+
+            System.out.println("✅ Cập nhật AI thành công!");
+            return ResponseEntity.ok("Đã cập nhật từ AI");
+
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi khi n8n cập nhật AI: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+        }
+    }
+
+    // ==========================================
+    // API LẤY ĐƠN HÀNG MỚI NHẤT CHO N8N
+    // ==========================================
+    @GetMapping("/latest")
+    public ResponseEntity<?> getLatestOrder() {
+        try {
+            Order order = orderService.getLatestOrder();
+            if (order == null) {
+                return ResponseEntity.notFound().build();
+            }
+            // Trả về dưới dạng List (mảng) để n8n đọc cấu trúc y hệt như lệnh SQL cũ
+            return ResponseEntity.ok(java.util.Collections.singletonList(order));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: Không lấy được đơn hàng mới nhất");
         }
     }
 }
