@@ -1,5 +1,5 @@
 {
-  "name": "Điều phôi kho Giao Hàng",
+  "name": "Điều phối kho Giao Hàng",
   "nodes": [
     {
       "parameters": {
@@ -14,32 +14,11 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        -976,
-        48
+        -864,
+        352
       ],
-      "id": "b5ccd086-1de7-4c3b-bc1f-68d93deaa4c8",
+      "id": "b5a01ae4-3239-4d60-baac-d571d49bb4f1",
       "name": "Schedule Trigger"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT * FROM orders WHERE status = 'AI_PROCESSED';",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.mySql",
-      "typeVersion": 2.5,
-      "position": [
-        -768,
-        48
-      ],
-      "id": "c10c6a5d-72d8-4d23-a199-93d68085b5c7",
-      "name": "Execute a SQL query",
-      "credentials": {
-        "mySql": {
-          "id": "v11D932eBRE84CgQ",
-          "name": "MySQL account"
-        }
-      }
     },
     {
       "parameters": {
@@ -68,10 +47,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        112,
-        48
+        224,
+        352
       ],
-      "id": "1a40ba50-7b52-4d58-87d5-25a2e9b243dd",
+      "id": "74f889d8-5d99-437d-99db-778c72a68fc3",
       "name": "If"
     },
     {
@@ -92,10 +71,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        496,
-        -208
+        608,
+        96
       ],
-      "id": "cb8fec15-8077-48c6-8675-ac621ab529b9",
+      "id": "bf45451a-a547-492a-a26d-19b03a6586fe",
       "name": "Edit Fields"
     },
     {
@@ -116,10 +95,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        496,
-        -64
+        608,
+        240
       ],
-      "id": "7bc95676-f116-471a-8762-1323448e17b6",
+      "id": "1b524c71-edbe-4aa1-afc2-d8c5765c2674",
       "name": "Edit Fields1"
     },
     {
@@ -127,32 +106,11 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        880,
-        64
+        992,
+        368
       ],
-      "id": "2e8b3c36-d709-40ee-8561-60dfaa2e3d6a",
+      "id": "51f48e94-5302-4e63-b3da-ec80cefadc98",
       "name": "Merge"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE orders SET status = 'DELIVERING, shipper = '{{ $json.shipper }}', shipping_fee = {{ $json.shipping_fee }} WHERE id = {{ $json.id }};",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.mySql",
-      "typeVersion": 2.5,
-      "position": [
-        1072,
-        64
-      ],
-      "id": "62d1a65f-502e-4dfa-a8ff-7e5df0401c62",
-      "name": "Execute a SQL query1",
-      "credentials": {
-        "mySql": {
-          "id": "v11D932eBRE84CgQ",
-          "name": "MySQL account"
-        }
-      }
     },
     {
       "parameters": {
@@ -161,10 +119,10 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        -528,
-        48
+        -416,
+        352
       ],
-      "id": "6a4ce5c7-281e-459a-adf5-bb1a7c5f84ed",
+      "id": "e67fd5ea-e30a-4db3-939f-91d42ebd1d86",
       "name": "Loop Over Items"
     },
     {
@@ -203,10 +161,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -336,
-        -208
+        -224,
+        96
       ],
-      "id": "81cc1da5-39dd-4340-a95e-34bebae4e2e6",
+      "id": "0ffe2f77-9288-4b8b-8430-2d3bddaae915",
       "name": "If1"
     },
     {
@@ -227,10 +185,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -176,
-        48
+        -64,
+        352
       ],
-      "id": "53a05039-f298-48ba-9cb5-960d045c34d7",
+      "id": "4174c39d-749f-44e9-a916-b91ef1bd65df",
       "name": "Edit Fields2"
     },
     {
@@ -251,32 +209,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -112,
-        -304
+        0,
+        0
       ],
-      "id": "83cdf104-8da4-4457-8d94-748a3eb13b2a",
+      "id": "2f5ec2d1-2bc3-4f69-a8bf-0967d3641d97",
       "name": "Edit Fields3"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE orders SET status = 'DELIVERING' WHERE id = {{ $json.id }};",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.mySql",
-      "typeVersion": 2.5,
-      "position": [
-        80,
-        -208
-      ],
-      "id": "14583718-b2be-4ce8-ac1a-49ab606076ce",
-      "name": "Execute a SQL query2",
-      "credentials": {
-        "mySql": {
-          "id": "v11D932eBRE84CgQ",
-          "name": "MySQL account"
-        }
-      }
     },
     {
       "parameters": {
@@ -291,32 +228,11 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        -1024,
-        448
+        -912,
+        752
       ],
-      "id": "19d3a506-642b-4f75-932c-4a50bb80be14",
+      "id": "31509051-06d9-4625-855e-6cc4cc6e36df",
       "name": "Schedule Trigger1"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT COUNT(id) as tong_don, IFNULL(SUM(shipping_fee), 0) as tong_tien FROM orders;",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.mySql",
-      "typeVersion": 2.5,
-      "position": [
-        -752,
-        448
-      ],
-      "id": "157fa7d6-a250-41d8-8185-84d205c15b3a",
-      "name": "Execute a SQL query3",
-      "credentials": {
-        "mySql": {
-          "id": "v11D932eBRE84CgQ",
-          "name": "MySQL account"
-        }
-      }
     },
     {
       "parameters": {
@@ -329,18 +245,94 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        -480,
-        448
+        -368,
+        752
       ],
-      "id": "56c7fbf6-dd87-408b-b6bf-a41c1cc242aa",
+      "id": "c6b0b0d1-98e9-4000-8e1d-16099090677d",
       "name": "Send an Email",
       "webhookId": "d1fc92da-015a-4efa-b370-033ca3dde240",
       "credentials": {
         "smtp": {
-          "id": "7mQetV8Ou9vGmj3L",
+          "id": "m4gPse3lWHTgNDDd",
           "name": "SMTP account"
         }
       }
+    },
+    {
+      "parameters": {
+        "url": "http://192.168.114.44:8080/api/orders/status/AI_PROCESSED",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -656,
+        352
+      ],
+      "id": "bfa007a3-5223-4526-90e3-6ffd3d2decf4",
+      "name": "Execute a SQL query4"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://192.168.114.44:8080/api/orders/{{ $json.id }}/status",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"status\": \"DELIVERING\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        96
+      ],
+      "id": "c7c57234-b7b1-4276-8035-57c25b49d622",
+      "name": "Execute a SQL query2"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://192.168.114.44:8080/api/orders/{{ $json.id }}/assign-delivery",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"DELIVERING\",\n  \"shipper\": \"{{ $json.shipper }}\",\n  \"shippingFee\": {{ $json.shippingFee }}\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1200,
+        368
+      ],
+      "id": "80b197b9-0bb7-4815-8342-9dbd521ef52f",
+      "name": "Execute a SQL query"
+    },
+    {
+      "parameters": {
+        "url": "http://192.168.114.44:8080/api/orders/stats",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -640,
+        752
+      ],
+      "id": "b1378d7b-89a4-4d5a-b14a-18af49da7b5a",
+      "name": "Execute a SQL query5"
     }
   ],
   "pinData": {},
@@ -349,18 +341,7 @@
       "main": [
         [
           {
-            "node": "Execute a SQL query",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute a SQL query": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
+            "node": "Execute a SQL query4",
             "type": "main",
             "index": 0
           }
@@ -411,7 +392,7 @@
       "main": [
         [
           {
-            "node": "Execute a SQL query1",
+            "node": "Execute a SQL query",
             "type": "main",
             "index": 0
           }
@@ -424,17 +405,6 @@
         [
           {
             "node": "If1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute a SQL query1": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
             "type": "main",
             "index": 0
           }
@@ -481,6 +451,28 @@
         ]
       ]
     },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Execute a SQL query2": {
       "main": [
         [
@@ -492,18 +484,18 @@
         ]
       ]
     },
-    "Schedule Trigger1": {
+    "Execute a SQL query": {
       "main": [
         [
           {
-            "node": "Execute a SQL query3",
+            "node": "Loop Over Items",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute a SQL query3": {
+    "Execute a SQL query5": {
       "main": [
         [
           {
@@ -515,17 +507,17 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "561096df-a2c1-4193-9996-671553b44b49",
+  "versionId": "a78bf593-c22f-48d0-80ae-a06276d7ca44",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "6b96901c6a8f53cde4aeb9ec81d0d8f066cc30ec7281146839f9f5e0ff3f7af5"
+    "instanceId": "41a423f4825653465e2469bf71de92a24ac991e284c54f9bff05c348b90ad7af"
   },
-  "id": "b4TAhXAKLByAf5q1",
+  "id": "5vLYoGE57pudgQjO",
   "tags": []
 }

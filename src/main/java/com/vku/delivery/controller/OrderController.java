@@ -148,9 +148,7 @@ public class OrderController {
         }
     }
 
-    // ==========================================
     // API NHẬN KẾT QUẢ TỪ N8N (AI VÀ THỜI TIẾT)
-    // ==========================================
     @PutMapping("/{id}/ai-update")
     public ResponseEntity<?> updateOrderFromAi(
             @PathVariable Integer id,
@@ -192,9 +190,7 @@ public class OrderController {
         }
     }
 
-    // ==========================================
     // API LẤY ĐƠN HÀNG MỚI NHẤT CHO N8N
-    // ==========================================
     @GetMapping("/latest")
     public ResponseEntity<?> getLatestOrder() {
         try {
@@ -206,6 +202,75 @@ public class OrderController {
             return ResponseEntity.ok(java.util.Collections.singletonList(order));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Lỗi: Không lấy được đơn hàng mới nhất");
+        }
+    }
+    // API LẤY DANH SÁCH ĐƠN HÀNG THEO TRẠNG THÁI
+    @GetMapping("/status/{status}")
+    public ResponseEntity<?> getOrdersByStatus(@PathVariable String status) {
+        try {
+            java.util.List<Order> orders = orderService.getOrdersByStatus(status);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: Không lấy được danh sách đơn hàng");
+        }
+    }
+    // API CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (Thay thế lệnh UPDATE)
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Integer id, @RequestBody Map<String, String> request) {
+        try {
+            Optional<Order> orderOpt = orderService.getOrderById(id);
+            if (!orderOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("Không tìm thấy đơn hàng ID: " + id);
+            }
+
+            Order order = orderOpt.get();
+            if (request.containsKey("status")) {
+                order.setStatus(request.get("status"));
+                orderService.createOrder(order); // Hàm này của ông bản chất là .save() nên dùng để update luôn
+            }
+
+            return ResponseEntity.ok("Cập nhật trạng thái thành công!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi cập nhật trạng thái: " + e.getMessage());
+        }
+    }
+    // API CẬP NHẬT THÔNG TIN GIAO HÀNG (Thay cho query1)
+    @PutMapping("/{id}/assign-delivery")
+    public ResponseEntity<?> assignDeliveryInfo(@PathVariable Integer id, @RequestBody java.util.Map<String, Object> request) {
+        try {
+            Optional<Order> orderOpt = orderService.getOrderById(id);
+            if (!orderOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("Không tìm thấy đơn hàng ID: " + id);
+            }
+            Order order = orderOpt.get();
+
+            // Cập nhật trạng thái
+            if (request.containsKey("status")) {
+                order.setStatus(request.get("status").toString());
+            }
+            // Cập nhật đơn vị vận chuyển
+            if (request.containsKey("shipper")) {
+                order.setShipper(request.get("shipper").toString());
+            }
+            // Cập nhật phí ship
+            if (request.containsKey("shippingFee")) {
+                order.setShippingFee(Integer.valueOf(request.get("shippingFee").toString()));
+            }
+
+            orderService.createOrder(order); // Lưu lại vào DB
+            return ResponseEntity.ok("Cập nhật thông tin giao hàng thành công!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+        }
+    }
+
+    // API LẤY THỐNG KÊ (Thay cho query3)
+    @GetMapping("/stats")
+    public ResponseEntity<?> getStatistics() {
+        try {
+            return ResponseEntity.ok(orderService.getOrderStats());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi lấy thống kê");
         }
     }
 }

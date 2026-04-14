@@ -1,0 +1,316 @@
+{
+  "name": "Báo Cáo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9102f4a1-7868-44a3-b33c-78114c981656",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -464,
+        80
+      ],
+      "id": "dc60a0b4-8497-4046-8380-4ec15c2585b5",
+      "name": "Webhook",
+      "webhookId": "9102f4a1-7868-44a3-b33c-78114c981656"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c2c7e42e-fb8b-47b7-bfbf-e8dc5026b91e",
+              "leftValue": "={{ $json.body.khoi_luong }}",
+              "rightValue": 20000,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "a0ec693e-34f0-4bc7-838a-516c47a93723",
+              "leftValue": "={{ $json.body.phi_ship }}",
+              "rightValue": 150000,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -224,
+        80
+      ],
+      "id": "c0bc5b67-36c9-436f-94ab-e4accfa6c3ac",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1rOJeHtfzd4DKZo06u0qACMBLg5VlkEbq6gZPssqwjRI",
+          "mode": "list",
+          "cachedResultName": "BÁO CÁO DOANH THU GIAO HÀNG",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rOJeHtfzd4DKZo06u0qACMBLg5VlkEbq6gZPssqwjRI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1072428149,
+          "mode": "list",
+          "cachedResultName": "Hàng cồng kềnh",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rOJeHtfzd4DKZo06u0qACMBLg5VlkEbq6gZPssqwjRI/edit#gid=1072428149"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID Đơn": "={{ $json.body.id_don }}",
+            "Thời Gian": "={{ $json.body.thoi_gian }}",
+            "Khối Lượng (gram)": "={{ $json.body.khoi_luong }}",
+            "Tên Hàng Hóa": "={{ $json.body.ten_hang }}",
+            "Đơn Vị Giao": "={{ $json.body.don_vi_giao }}",
+            "Phí Ship (VNĐ)": "={{ $json.body.phi_ship }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Đơn",
+              "displayName": "ID Đơn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Thời Gian",
+              "displayName": "Thời Gian",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tên Hàng Hóa",
+              "displayName": "Tên Hàng Hóa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Khối Lượng (gram)",
+              "displayName": "Khối Lượng (gram)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Đơn Vị Giao",
+              "displayName": "Đơn Vị Giao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phí Ship (VNĐ)",
+              "displayName": "Phí Ship (VNĐ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3c79e025-bd29-41d8-821d-55092a0dfad3",
+      "name": "Hàng Cồng Kềnh",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kEzW8gNiWrlEH0f8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1rOJeHtfzd4DKZo06u0qACMBLg5VlkEbq6gZPssqwjRI",
+          "mode": "list",
+          "cachedResultName": "BÁO CÁO DOANH THU GIAO HÀNG",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rOJeHtfzd4DKZo06u0qACMBLg5VlkEbq6gZPssqwjRI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Trang tính1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rOJeHtfzd4DKZo06u0qACMBLg5VlkEbq6gZPssqwjRI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID Đơn": "={{ $json.body.id_don }}",
+            "Thời Gian": "={{ $json.body.thoi_gian }}",
+            "Tên Hàng Hóa": "={{ $json.body.ten_hang }}",
+            "Khối lượng (gram)": "={{ $json.body.khoi_luong }}",
+            "Đơn Vị Giao": "={{ $json.body.don_vi_giao }}",
+            "Phí Ship (VNĐ)": "={{ $json.body.phi_ship }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Đơn",
+              "displayName": "ID Đơn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Thời Gian",
+              "displayName": "Thời Gian",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tên Hàng Hóa",
+              "displayName": "Tên Hàng Hóa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Khối lượng (gram)",
+              "displayName": "Khối lượng (gram)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Đơn Vị Giao",
+              "displayName": "Đơn Vị Giao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phí Ship (VNĐ)",
+              "displayName": "Phí Ship (VNĐ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        16,
+        224
+      ],
+      "id": "f6135dab-ae00-4e76-bf6a-1e5c98a91802",
+      "name": "Báo Cáo Doanh Thu",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kEzW8gNiWrlEH0f8",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Hàng Cồng Kềnh",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Báo Cáo Doanh Thu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "75ea441d-57c9-41c9-92a3-4e83b2ce4716",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "41a423f4825653465e2469bf71de92a24ac991e284c54f9bff05c348b90ad7af"
+  },
+  "id": "h1wM6F1W7LNnjOHS",
+  "tags": []
+}

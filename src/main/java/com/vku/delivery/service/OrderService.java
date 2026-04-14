@@ -36,4 +36,14 @@ public class OrderService {
     public Order getLatestOrder() {
         return orderRepository.findFirstByOrderByIdDesc();
     }
+    // Lấy danh sách đơn hàng theo trạng thái
+    public java.util.List<Order> getOrdersByStatus(String status) {
+        return orderRepository.findByStatus(status);
+    }
+    public java.util.Map<String, Long> getOrderStats() {
+        java.util.Map<String, Long> stats = new java.util.HashMap<>();
+        stats.put("tong_don", orderRepository.countTotalOrders());
+        stats.put("tong_tien", orderRepository.sumTotalShippingFee());
+        return stats;
+    }
 }
