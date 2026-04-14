@@ -1,0 +1,366 @@
+{
+  "name": "AI Smart Logistics",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Da Nang&appid=9fc4a547b9a7546e1156b51d33af4c8f&lang=vi&units=metric",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1520,
+        -144
+      ],
+      "id": "028c3df4-97bc-4d65-b957-dc7b85b1b45f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b3f14070-beed-4834-9921-2f3e56666de6",
+              "leftValue": "={{ $('Code in JavaScript').item.json.tinh_chat_hang }}",
+              "rightValue": "NORMAL",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -304,
+        -144
+      ],
+      "id": "5f8a6b98-916f-4d95-910d-706ba0013ef0",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b599e58-f8e0-4613-8235-a0370fa01bfb",
+              "name": "estimated_delivery",
+              "value": "3-5 ngày",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -96,
+        -48
+      ],
+      "id": "c03ac337-2d38-4bb7-86ea-f89f739f44d7",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"ten_nguoi_nhan\": \"{{ $('Execute a SQL query2').item.json.receiverName }}\",\n  \"sdt_nhan\": \"{{ $('Execute a SQL query2').item.json.receiverPhone }}\",\n  \"quang_duong\": \"{{ $('Execute a SQL query2').item.json.distanceKm }}\",\n  \"tinh_chat_hang\": \"{{ $('Code in JavaScript').item.json.tinh_chat_hang }}\",\n  \"phi_de_vo\": \"{{ $('Code in JavaScript').item.json.phi_de_vo }}\",\n  \"thoi_tiet\": \"{{ $('HTTP Request').first().json.weather[0].description }}\",\n  \"phi_thoi_tiet\": \"{{ $('Code in JavaScript').first().json.phi_thoi_tiet }}\",\n  \"tong_tien\": \"{{ $('Code in JavaScript').item.json.tong_tien }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -96,
+        -240
+      ],
+      "id": "dfe6f00e-0204-4aab-84e4-96d208802219",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"ten_nguoi_nhan\": \"{{ $('Execute a SQL query2').item.json.receiverName }}\",\n  \"sdt_nhan\": \"{{ $('Execute a SQL query2').item.json.receiverPhone }}\",\n  \"quang_duong\": \"{{ $('Execute a SQL query2').item.json.distanceKm }}\",\n  \"tinh_chat_hang\": \"{{ $('Code in JavaScript').item.json.tinh_chat_hang }}\",\n  \"phi_de_vo\": \"{{ $('Code in JavaScript').item.json.phi_de_vo }}\",\n  \"thoi_tiet\": \"{{ $('HTTP Request').first().json.weather[0].description }}\",\n  \"phi_thoi_tiet\": \"{{ $('Code in JavaScript').first().json.phi_thoi_tiet }}\",\n  \"tong_tien\": \"{{ $('Code in JavaScript').item.json.tong_tien }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "256b87db-968a-47c3-b92a-f3fd6d78b109",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-logistic-trigger",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1984,
+        -144
+      ],
+      "id": "6000fe1d-fc3a-40e4-af81-4026a530d24c",
+      "name": "Webhook",
+      "webhookId": "7802664b-d69a-41d5-bdad-ffb08246eae6"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://192.168.1.128:8080/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"additionalFee\": 0,\n  \"status\": \"STANDARD_SHIPPING\",\n  \"noteAppend\": \" | AI_TAG: NORMAL\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -480,
+        -144
+      ],
+      "id": "d0b44a0e-1b1b-4c48-9a11-673eb65a811a",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://192.168.1.128:8080/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"additionalFee\": 0,\n  \"status\": \"STANDARD_SHIPPING\",\n  \"noteAppend\": \" | AI_TAG: NORMAL\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        112,
+        -48
+      ],
+      "id": "2b82ec45-ea2c-4cba-b467-132c45352a6e",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "url": "http://192.168.1.128:8080/api/orders/latest",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1744,
+        -144
+      ],
+      "id": "14541082-32cb-484e-b72e-cf6781879c2c",
+      "name": "Execute a SQL query2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Hãy phân tích thông tin đơn hàng và trả về kết quả JSON theo đúng quy tắc đã cài đặt.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Bạn là hệ thống AI Điều phối Logistics chuyên nghiệp. Hãy phân tích thông tin đơn hàng sau: - Ghi chú: \"{{ $json.weather[0].description }}\" - Thời tiết: \"{{ $('Execute a SQL query2').item.json.note }}\"  NHIỆM VỤ BẮT BUỘC:  Trả về ĐÚNG 1 đối tượng JSON. TUYỆT ĐỐI KHÔNG giải thích, KHÔNG chào hỏi, KHÔNG bọc trong markdown (```json).  Cấu trúc JSON phải tuân thủ nghiêm ngặt logic sau: {   \"tinh_chat_hang\": \"Điền 'FRAGILE' (nếu ghi chú nhắc đồ dễ vỡ/thủy tinh/gốm), 'URGENT' (nếu giục gấp/giao ngay), 'NORMAL' (nếu bình thường).\",   \"phi_de_vo\": \"Điền số 5000 nếu tinh_chat_hang là FRAGILE. Điền số 10000 nếu là URGENT. Còn lại điền 0.\",   \"thoi_tiet\": \"Dịch tình trạng thời tiết ở trên sang tiếng Việt ngắn gọn (VD: Mây rải rác, Mưa nhẹ, Nắng đẹp).\",   \"phi_thoi_tiet\": \"Điền số 15000 nếu thời tiết chứa các từ: rain, storm, drizzle, mưa, bão. Nếu không thì điền số 0.\" }"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -1248,
+        -128
+      ],
+      "id": "56bd04e5-d27d-4c5c-804e-c0cf743fa25b",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        144
+      ],
+      "id": "a55acfb7-62dd-4aeb-b7b7-2df23736723c",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "150IMqCnJfBJt02h",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Lấy kết quả văn bản từ Llama 3\nlet rawText = $input.item.json.text;\n\n// 2. BỘ LỌC CHỐNG ĐẠN (TÌM VÀ CẮT ĐÚNG PHẦN JSON)\n// Dù AI có nói nhảm gì trước hay sau, nó chỉ lấy phần nằm giữa { và }\nlet jsonMatch = rawText.match(/\\{[\\s\\S]*\\}/);\nif (jsonMatch) {\n    rawText = jsonMatch[0];\n}\n\n// 3. Dịch sang object an toàn\nlet aiData = {};\ntry {\n    aiData = JSON.parse(rawText);\n} catch (e) {\n    // Kịch bản dự phòng: Rủi AI xuất tào lao thì tự gán mặc định để KHÔNG BAO GIỜ SẬP\n    aiData = {\n        tinh_chat_hang: \"FRAGILE\",\n        phi_de_vo: 5000,\n        thoi_tiet: \"Chưa xác định\",\n        phi_thoi_tiet: 0\n    };\n}\n\n// 4. Lấy Quãng đường từ Webhook\nlet quangDuong = $('Webhook').item.json.body.distance || 0;\nlet phiShipGoc = quangDuong * 5000;\n\n// 5. Gom phụ phí\nlet phiDeVo = parseInt(aiData.phi_de_vo) || 0;\nlet phiThoiTiet = parseInt(aiData.phi_thoi_tiet) || 0;\n\nlet tongTien = phiShipGoc + phiDeVo + phiThoiTiet;\n\n// 6. Trả về cho Laravel hiển thị Hóa đơn\nreturn {\n    \"tinh_chat_hang\": aiData.tinh_chat_hang,\n    \"phi_de_vo\": phiDeVo,\n    \"thoi_tiet\": aiData.thoi_tiet,\n    \"phi_thoi_tiet\": phiThoiTiet,\n    \"quang_duong\": quangDuong,\n    \"tong_tien\": tongTien\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        -128
+      ],
+      "id": "8502e774-402f-446e-bdf4-b7a0907db8bd",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "94978692-234b-439a-b49a-40c2c5d8ebed",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6b96901c6a8f53cde4aeb9ec81d0d8f066cc30ec7281146839f9f5e0ff3f7af5"
+  },
+  "id": "KDcYZLHZJsSUDfH6",
+  "tags": []
+}
