@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    <link rel="stylesheet" href="{{ asset('css/chatbot.css') }}">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             @if(Auth::user()->email === 'admin@gmail.com')
@@ -62,8 +62,30 @@
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle" id="adminTable">
                                     <thead><tr><th>Mã Yêu Cầu</th><th>Đối tác (Người Gửi)</th><th>Khách hàng (Người Nhận)</th><th>Thao tác</th></tr></thead>
-                                    <tbody></tbody>
+                                    <tbody>
+                                        @foreach($orders as $o)
+                                            <tr>
+                                                <td class="fw-bold text-danger">#{{ $o->id }} <span class="badge bg-danger ms-1">Mới</span></td>
+                                                <td>
+                                                    <span class="badge badge-shop mb-1"><i class="fa-solid fa-store"></i> Đối tác</span><br>
+                                                    <strong>{{ $o->sender_name ?? 'FastLogistics' }}</strong><br>
+                                                    <small><i class="fa-solid fa-location-dot text-danger"></i> {{ $o->sender_address ?? 'Kho trung tâm' }}</small>
+                                                </td>
+                                                <td>
+                                                    <strong>{{ $o->receiver_name }}</strong><br>
+                                                    <small><i class="fa-solid fa-location-dot text-primary"></i> {{ $o->receiver_address }}</small>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-primary btn-sm fw-bold text-white"
+                                                        onclick="openOrderForm('{{ $o->id }}', '{{ $o->sender_name }}', '{{ $o->sender_phone }}', '{{ $o->sender_address }}', '{{ $o->receiver_name }}', '{{ $o->receiver_phone }}', '{{ $o->receiver_address }}', '{{ $o->product_name }}', {{ $o->weight ?? 1 }}, '{{ $o->note ?? '' }}')">
+                                                        <i class="fa-solid fa-bolt"></i> Điều Phối
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
                                 </table>
+
                             </div>
                         </div>
 
@@ -124,37 +146,6 @@
 
                         <script>
                             let currentOrderId = null;
-
-                            // Tự động load bảng (DOM Manipulation)
-                            function loadAdminTable() {
-                                let orders = JSON.parse(localStorage.getItem('fakeOrders')) || [];
-                                let tbody = document.querySelector('#adminTable tbody');
-                                tbody.innerHTML = '';
-
-                                if(orders.length === 0) {
-                                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><i class="fa-solid fa-check-circle fa-2x mb-2 text-success"></i><br>Tuyệt vời! Đã xử lý hết đơn hàng.</td></tr>';
-                                    return;
-                                }
-
-                                orders.forEach(o => {
-                                    let tr = document.createElement('tr');
-                                    tr.innerHTML = `
-                                        <td class="fw-bold text-danger">${o.id} <span class="badge bg-danger ms-1">Mới</span></td>
-                                        <td><span class="badge badge-shop mb-1"><i class="fa-solid fa-store"></i> Đối tác</span><br><strong>${o.sName}</strong><br><small><i class="fa-solid fa-location-dot text-danger"></i> ${o.sAddr}</small></td>
-                                        <td><strong>${o.rName}</strong><br><small><i class="fa-solid fa-location-dot text-primary"></i> ${o.rAddr}</small></td>
-                                        <td><button class="btn btn-primary btn-sm fw-bold text-white" onclick="openOrderForm('${o.id}', '${o.sName}', '${o.sPhone}', '${o.sAddr}', '${o.rName}', '${o.rPhone}', '${o.rAddr}', '${o.pName}', ${o.weight}, '${o.note}')"><i class="fa-solid fa-bolt"></i> Điều Phối</button></td>
-                                    `;
-                                    tbody.prepend(tr);
-                                });
-                            }
-
-                            window.onload = loadAdminTable;
-
-                            // Lắng nghe thay đổi từ Shop
-                            window.addEventListener('storage', function(e) {
-                                if (e.key === 'fakeOrders') { loadAdminTable(); }
-                            });
-
                             function openOrderForm(id, sN, sP, sA, rN, rP, rA, pN, w, n) {
                                 currentOrderId = id;
                                 document.getElementById('pendingOrdersTable').style.display = 'none'; document.getElementById('orderProcessingForm').style.display = 'block';
@@ -446,4 +437,9 @@
             </div>
         </div>
     </div>
+<script>
+    window.phpOrders = @json($orders);
+</script>
+<x-chatbot />
+<script src="{{ asset('js/chatbot.js') }}"></script>
 </x-app-layout>

@@ -1,0 +1,143 @@
+/* =========================================
+   GIAO DIỆN CHATBOT CƠ BẢN
+   ========================================= */
+.chatbot-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: white;
+    font-size: 24px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    z-index: 9999;
+    transition: transform 0.2s;
+}
+.chatbot-fab:hover { transform: scale(1.1); }
+
+#ai-chatbot-container {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 400px;
+    background: #1e293b; /* Dark mode */
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9998;
+    color: #e2e8f0;
+    font-family: sans-serif;
+    transition: opacity 0.3s, transform 0.3s;
+}
+.chatbot-hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+.chatbot-header {
+    background: #0f172a;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    border-bottom: 1px solid #334155;
+}
+.chatbot-header button {
+    background: none; border: none; color: white; cursor: pointer;
+}
+.chatbot-messages {
+    padding: 15px;
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#btn-xem-lo-trinh {
+    width: 100%;
+    padding: 12px;
+    background: #10b981;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#btn-xem-lo-trinh:hover { background: #059669; }
+.hidden { display: none !important; }
+
+/* =========================================
+   BẢN ĐỒ MÔ PHỎNG & HIỆU ỨNG CHẤM SÁNG
+   ========================================= */
+#mini-map-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    background: #0f172a;
+    border-top: 1px solid #334155;
+    overflow: hidden;
+    /* Kẻ ô lưới cho giống bản đồ radar */
+    background-image: linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.map-node {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #475569;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    transform: translate(-50%, -50%); /* Canh giữa tọa độ */
+    z-index: 10;
+}
+.node-depot { background: #ef4444; width: 30px; height: 30px;} /* Kho màu đỏ to hơn */
+
+/* CÁI CHẤM SÁNG SHIPPER NẰM Ở ĐÂY SẾP NHÉ */
+.shipper-dot {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #00ffcc;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px 5px rgba(0, 255, 204, 0.7); /* Phát sáng */
+    transition: top 1s linear, left 1s linear; /* DI CHUYỂN MƯỢT MÀ TRONG 1 GIÂY */
+    z-index: 20;
+    opacity: 0; /* Ẩn đi khi chưa bấm chạy */
+}
+/* Màu sắc mới cực kỳ dễ nhìn cho sếp */
+.chatbot-messages {
+    padding: 15px;
+    max-height: 400px; /* Tăng chiều cao cho sếp nhìn đã mắt */
+    overflow-y: auto;
+    background: #0f172a; /* Nền tối sâu */
+    color: #ffffff !important; /* Chữ trắng tinh cho dễ đọc */
+    font-size: 15px;
+}
+
+.msg-ai .p-2 {
+    background: #1e293b; /* Màu xanh đen sang trọng */
+    color: #38bdf8 !important; /* Chữ xanh lơ dịu mắt cho AI */
+    border-left: 4px solid #3b82f6;
+}
+
+.msg-user .p-2 {
+    background: #334155;
+    color: #fbbf24 !important; /* Chữ vàng nắng cho sếp Thái nổi bật */
+}
+
+.alert-info { background: #0c4a6e; color: #7dd3fc; border: none; }
+.alert-success { background: #064e3b; color: #6ee7b7; border: none; }
