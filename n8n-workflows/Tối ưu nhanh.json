@@ -1,0 +1,355 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "toi-uu-logistics",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -800,
+        -64
+      ],
+      "id": "c39ee89e-c7aa-4cba-b475-3a17c588cac7",
+      "name": "Webhook",
+      "webhookId": "7e4fcc97-1ea5-4bdd-8c8f-f25c2fe75a50"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawData = $('Webhook').item.json.body;\n// Đổi cách đọc dữ liệu thời tiết cho chuẩn OpenWeatherMap\nconst weatherData = $('HTTP Request1').item.json; \nconst orders = rawData.orders;\n\n// OpenWeatherMap quy ước: Các mã ID dưới 700 là thời tiết xấu (Mưa, Bão, Sấm chớp, Tuyết)\n// 800 là trời quang mây tạnh.\nconst weatherId = weatherData.weather[0].id;\nconst isRaining = weatherId < 700; \nconst weatherSurcharge = isRaining ? 15000 : 0;\n\nconst MAX_WEIGHT = 30; \nlet trips = [];\n\norders.forEach(order => {\n    let weight = parseFloat(order.weight);\n    let isFragile = (order.tinh_chat === \"FRAGILE\");\n\n    if (weight > MAX_WEIGHT) {\n        trips.push({ \n            tripId: trips.length + 1, \n            vehicle: \"TRUCK\", \n            totalWeight: weight, \n            surcharge: (isFragile ? 10000 : 0) + weatherSurcharge,\n            orders: [order] \n        });\n        return;\n    }\n\n    let placed = false;\n    for (let trip of trips) {\n        if (trip.vehicle === \"MOTORBIKE\" && (trip.totalWeight + weight) <= MAX_WEIGHT) {\n            trip.orders.push(order);\n            trip.totalWeight += weight;\n            trip.surcharge += (isFragile ? 10000 : 0);\n            placed = true;\n            break;\n        }\n    }\n\n    if (!placed) {\n        trips.push({ \n            tripId: trips.length + 1, \n            vehicle: \"MOTORBIKE\", \n            totalWeight: weight, \n            surcharge: (isFragile ? 10000 : 0) + weatherSurcharge, // Chỉ thu phí mưa 1 lần mỗi chuyến\n            orders: [order] \n        });\n    }\n});\n\n// Trả về kèm thông tin thời tiết để lát báo cáo\nreturn trips.map(trip => ({ \n    json: { \n        tripData: trip, \n        isRaining: isRaining \n    } \n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        112
+      ],
+      "id": "c426ad04-28ed-480e-8fb7-42ab958ea760",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        16,
+        112
+      ],
+      "id": "5802ae2c-734c-49b8-9af9-74068da3d6df",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "=http://router.project-osrm.org/trip/v1/driving/108.2150,16.0650;{{ $json.tripData.orders.map(order => order.lng + ',' + order.lat).join(';') }}?source=first&roundtrip=true",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        352,
+        192
+      ],
+      "id": "12a2fe6c-ee83-42b9-bc56-0a84d39246e0",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        528,
+        32
+      ],
+      "id": "e75822da-9632-4ffe-a855-040887fab3ee",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Lấy dữ liệu OSRM (Quãng đường + Dữ liệu Bản đồ) và Dữ liệu từ Node chia đơn\nconst osrmResults = $('HTTP Request').all(); \nconst originalTrips = $('Code in JavaScript').all().map(item => item.json);\n\nlet tongGiaoLe = 0; \nlet tongGop = 0; \nlet mapTrips = []; // Cục này để Laravel vẽ bản đồ\n\n// 2. Kế toán tính tiền chi tiết cho từng chuyến & OSRM Sắp xếp Lộ trình\nconst finalTrips = osrmResults.map((osrmItem, index) => {\n    let t = originalTrips[index].tripData;\n    let isRain = originalTrips[index].isRaining;\n    let osrmData = osrmItem.json; \n    \n    // Đổi mét sang km\n    let distKm = parseFloat((osrmData.trips[0].distance / 1000).toFixed(1)); \n    let WEATHER_SURCHARGE = isRain ? 15000 : 0;\n    \n    // ==========================================\n    // A. KẾ TOÁN TÍNH TIỀN GỘP & GIAO LẺ\n    // ==========================================\n    let phiCoBan = t.vehicle === \"TRUCK\" ? 50000 : 15000;\n    let phiKm = distKm * 5000;\n    let phiRotDiem = (t.orders.length - 1) * 5000;\n    \n    let phiDeVo = 0;\n    t.orders.forEach(o => {\n        let isFragile = (o.tinh_chat === \"FRAGILE\" || o.category === \"FRAGILE\");\n        if (isFragile) phiDeVo += 10000;\n\n        // B. TÍNH TIỀN GIAO LẺ (Để so sánh thành tích)\n        tongGiaoLe += 15000 + (isFragile ? 10000 : 0) + (distKm * 5000) + WEATHER_SURCHARGE;\n    });\n\n    let tongChuyen = phiCoBan + phiKm + phiRotDiem + phiDeVo + WEATHER_SURCHARGE;\n    tongGop += tongChuyen;\n\n    // ==========================================\n    // C. ĐỘT BIẾN: SẮP XẾP LẠI LỘ TRÌNH (VRP) CHO FRONTEND VẼ\n    // ==========================================\n    let waypoints = osrmData.waypoints; \n    let sortableOrders = [];\n\n    // OSRM trả về điểm 0 luôn là KHO. Mình bắt đầu bóc từ index 1 (các đơn hàng)\n    for(let i = 1; i < waypoints.length; i++) {\n        sortableOrders.push({\n            order: t.orders[i-1], \n            optimized_step: waypoints[i].waypoint_index // Số thứ tự tối ưu do AI tính toán\n        });\n    }\n\n    // Sắp xếp lại danh sách đơn hàng theo đúng số thứ tự mà AI đã tính\n    sortableOrders.sort((a, b) => a.optimized_step - b.optimized_step);\n\n    // Đóng gói mảng routeCoords có chèn thêm biến 'step' (1, 2, 3...)\n    let routeCoords = sortableOrders.map((item, idx) => ({ \n        step: idx + 1, // Thứ tự đi giao (Rất quan trọng cho vẽ bản đồ)\n        id: item.order.id || \"Đơn hàng\", \n        weight: item.order.weight + \"kg\", \n        x: item.order.x_pixel || Math.floor(Math.random() * 300 + 50),\n        y: item.order.y_pixel || Math.floor(Math.random() * 300 + 50)  \n    }));\n\n    mapTrips.push({\n        name: t.vehicle === \"TRUCK\" ? `Xe Tải ${index+1}` : `Xe Máy ${index+1}`,\n        color: t.vehicle === \"TRUCK\" ? \"#f59e0b\" : \"#3b82f6\",\n        route: routeCoords\n    });\n\n    // ==========================================\n    // D. ĐÓNG GÓI HÓA ĐƠN CHI TIẾT\n    // ==========================================\n    return {\n        tripName: \"Chuyến \" + (index + 1) + (t.vehicle === \"TRUCK\" ? \" (Xe Tải)\" : \" (Xe Máy)\"),\n        distance: distKm + \" km\",\n        totalOrders: t.orders.length,\n        breakdown_fee: {\n            \"Phí cơ bản\": phiCoBan,\n            \"Phí quãng đường\": phiKm,\n            \"Phí rớt điểm\": phiRotDiem,\n            \"Phí dễ vỡ\": phiDeVo,\n            \"Phí thời tiết\": WEATHER_SURCHARGE\n        },\n        totalTripCost: Math.round(tongChuyen) + \" VNĐ\"\n    };\n});\n\n// 3. BÁO CÁO TỔNG KẾT BẮN VỀ CHO LARAVEL\nlet tietKiem = Math.round(tongGiaoLe - tongGop);\nlet msgRain = originalTrips[0] && originalTrips[0].isRaining ? \"⚠️ Đà Nẵng đang mưa, hệ thống tự động cộng phụ phí thời tiết.\" : \"☀️ Thời tiết đẹp, không có phụ phí rủi ro.\";\n\nlet finalResponse = {\n    chatbot_message: `<b>Sếp ơi, em đã tối ưu xong!</b><br>${msgRain}<br>Gom thành công <b>${finalTrips.length} chuyến xe</b>.<br>🚀 Lộ trình đi giao đã được thuật toán AI sắp xếp lại ngắn nhất (Shipper không phải quay đầu).<br>💰 Thuật toán giúp sếp <b>TIẾT KIỆM ĐƯỢC ${tietKiem.toLocaleString('vi-VN')} VNĐ</b> so với giao lẻ!`,\n    invoices: finalTrips, // Trả về Hóa đơn chi tiết đầy đủ\n    map_data: { // Trả về data vẽ bản đồ (đã có biến step: 1, 2, 3...)\n        depot: { id: \"KHO\", name: \"KHO TỔNG\", x: 250, y: 250 },\n        trips: mapTrips\n    }\n};\n\n// Ném cục này về cho Laravel\nreturn [{ json: finalResponse }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        32
+      ],
+      "id": "7de1c1b7-a85a-42a7-8843-a6a81ba86a92",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Da Nang&appid=9fc4a547b9a7546e1156b51d33af4c8f&lang=vi&units=metric",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -592,
+        -64
+      ],
+      "id": "c13c5c92-a46a-454b-b5cd-9b13fdd593de",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.orders.length }}",
+                    "rightValue": 2,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    },
+                    "id": "04b59d5e-c233-4aed-b5c4-eaf35b30794c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4480f76e-1fae-4e5f-b2ee-0dc9a4dae527",
+                    "leftValue": "={{ $('Webhook').item.json.body.orders.length }}",
+                    "rightValue": 2,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        -64
+      ],
+      "id": "6b6bcd2e-670d-4540-963e-a848ad630e9d",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lấy dữ liệu Đầu vào và Thời tiết (Trường hợp 1 đơn vẫn có Thời tiết vì nó chạy qua API thời tiết rồi)\nconst rawData = $('Webhook').item.json.body;\nconst weatherData = $('HTTP Request1').item.json; \nconst orders = rawData.orders || [];\n\n// Kiểm tra thời tiết để \"cà khịa\"\nconst weatherId = weatherData.weather[0].id;\nconst isRaining = weatherId < 700;\nlet weatherMsg = isRaining ? \"⛈️ Đà Nẵng đang mưa to, sếp nhớ boa thêm tiền cho anh em shipper nhé!\" : \"☀️ Trời đang nắng ráo, book một phát có xế ngay!\";\n\nlet msg = \"\";\n\n// Nếu Web ném sang mảng rỗng (0 đơn)\nif (orders.length === 0) {\n    msg = `<b>Sếp đùa em à?</b> 🤬<br>Chưa có đơn hàng nào mà bắt em chạy thuật toán tối ưu! Ném thêm đơn vào đây cho em làm việc!`;\n} \n// Nếu Web ném sang đúng 1 đơn\nelse {\n    msg = `<b>Báo cáo sếp: Không cần dùng Dao Mổ Trâu để giết Gà!</b> 🐓<br>Hệ thống phát hiện chỉ có vỏn vẹn <b>1 đơn hàng</b> (Mã: ${orders[0].id}).<br>Thuật toán gộp chuyến từ chối hoạt động vì không cần thiết. Đề xuất sếp book thẳng GrabExpress hoặc Ahamove cho nhanh gọn lẹ!<br><br><i>${weatherMsg}</i>`;\n}\n\n// Trả về JSON chuẩn form để Laravel không bị lỗi (Để mảng rỗng cho hóa đơn và bản đồ)\nreturn [{\n    json: {\n        chatbot_message: msg,\n        invoices: [], \n        map_data: {\n            depot: { id: \"KHO\", name: \"KHO TỔNG\", x: 250, y: 250 },\n            trips: []\n        }\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        -240
+      ],
+      "id": "7c84b98d-311d-48ef-a899-5a5659ae5d95",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        16,
+        -272
+      ],
+      "id": "8c0bf441-a578-4c70-81f6-61951a397410",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "body": {
+            "orders": [
+              {
+                "id": "REQ-01",
+                "weight": 10,
+                "lat": 16.072,
+                "lng": 108.2268
+              },
+              {
+                "id": "REQ-02",
+                "weight": 15,
+                "lat": 16.0715,
+                "lng": 108.225
+              },
+              {
+                "id": "REQ-03",
+                "weight": 8,
+                "lat": 16.073,
+                "lng": 108.2275
+              },
+              {
+                "id": "REQ-04",
+                "weight": 45,
+                "lat": 16.07,
+                "lng": 108.22
+              },
+              {
+                "id": "REQ-05",
+                "weight": 5,
+                "lat": 16.074,
+                "lng": 108.23
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ee3922a8-962a-4934-a372-0cb6dbb54c95",
+  "meta": {
+    "instanceId": "6b96901c6a8f53cde4aeb9ec81d0d8f066cc30ec7281146839f9f5e0ff3f7af5"
+  },
+  "id": "Yby4deJnobunJuDi",
+  "tags": []
+}
