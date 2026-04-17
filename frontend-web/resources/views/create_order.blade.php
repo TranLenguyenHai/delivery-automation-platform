@@ -51,11 +51,18 @@
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Địa chỉ lấy hàng <span class="text-red-500">*</span></label>
-                        <input type="text" name="sender_address" required class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm px-4 py-2" placeholder="Địa chỉ lấy hàng">
+                        <input type="text" id="sender_address" name="sender_address" required class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm px-4 py-2" placeholder="Địa chỉ lấy hàng">
+                        <input type="hidden" name="sender_lat" id="sender_lat">
+                        <input type="hidden" name="sender_lng" id="sender_lng">
+                        <p id="sender_status" class="text-[10px] mt-1 text-gray-400 italic"></p>
                     </div>
+
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Địa chỉ giao hàng <span class="text-red-500">*</span></label>
-                        <input type="text" name="receiver_address" required class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm px-4 py-2" placeholder="Địa chỉ giao hàng">
+                        <input type="text" id="receiver_address" name="receiver_address" required class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm px-4 py-2" placeholder="Địa chỉ giao hàng">
+                        <input type="hidden" name="receiver_lat" id="receiver_lat">
+                        <input type="hidden" name="receiver_lng" id="receiver_lng">
+                        <p id="receiver_status" class="text-[10px] mt-1 text-gray-400 italic"></p>
                     </div>
                 </div>
 
@@ -88,7 +95,6 @@
                         <textarea name="note" rows="2" class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm px-4 py-2 text-sm" placeholder="Ví dụ: Hàng thủy tinh dễ vỡ, giao trong giờ hành chính..."></textarea>
                     </div>
                 </div>
-
                 <button type="submit" class="w-full bg-blue-600 text-white text-base font-bold uppercase tracking-wider py-4 rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all flex items-center justify-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     TẠO ĐƠN HÀNG
@@ -97,4 +103,45 @@
             </form>
         </div>
     </div>
+<script>
+    function geocodeAddress(address, type) {
+        if (address.length < 10) return; // Địa chỉ ngắn quá thì chưa dò
+
+        const statusEl = document.getElementById(`${type}_status`);
+        statusEl.innerText = "🛰️ Đang dò tọa độ vệ tinh...";
+        statusEl.className = "text-[10px] mt-1 text-blue-500 italic";
+
+        // Gọi API miễn phí Nominatim
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const lat = data[0].lat;
+                    const lon = data[0].lon;
+
+                    // Điền tọa độ vào ô ẩn
+                    document.getElementById(`${type}_lat`).value = lat;
+                    document.getElementById(`${type}_lng`).value = lon;
+
+                    statusEl.innerText = `✅ Đã xác định vị trí: ${lat}, ${lon}`;
+                    statusEl.className = "text-[10px] mt-1 text-green-500 font-bold";
+                } else {
+                    statusEl.innerText = "❌ Không tìm thấy địa chỉ trên bản đồ!";
+                    statusEl.className = "text-[10px] mt-1 text-red-500";
+                }
+            })
+            .catch(error => {
+                statusEl.innerText = "⚠️ Lỗi kết nối bản đồ!";
+            });
+    }
+
+    // Lắng nghe sự kiện khi sếp nhập xong địa chỉ
+    document.getElementById('sender_address').addEventListener('blur', function() {
+        geocodeAddress(this.value, 'sender');
+    });
+
+    document.getElementById('receiver_address').addEventListener('blur', function() {
+        geocodeAddress(this.value, 'receiver');
+    });
+</script>
 </x-app-layout>

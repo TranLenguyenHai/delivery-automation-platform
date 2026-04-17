@@ -262,11 +262,10 @@
                 });
             }
         }
-    <script>
-            window.phpOrders = @json($orders);
+    </script>  <script>
+            window.phpOrders = @json(\DB::table('orders')->get());
         </script>
 
         <x-chatbot />
-
-        <script src="{{ asset('js/chatbot.js') }}"></script>
+        <script src="{{ asset('js/chatbot.js') }}?v={{ time() }}"></script>
 </x-app-layout>

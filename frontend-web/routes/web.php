@@ -167,21 +167,26 @@ Route::post('/orders/store', function (Request $request) {
     DB::table('orders')->insert([
         'status' => 'Chờ in đơn',
 
-                // --- THÊM 3 DÒNG NÀY ĐỂ HỨNG DỮ LIỆU NGƯỜI GỬI SẾP NHÉ ---
-                'sender_name' => $request->sender_name,
-                'sender_phone' => $request->sender_phone,
-                'sender_address' => $request->sender_address,
-                // --------------------------------------------------------
+        // --- THÔNG TIN NGƯỜI GỬI ---
+        'sender_name' => $request->sender_name,
+        'sender_phone' => $request->sender_phone,
+        'sender_address' => $request->sender_address,
+        'sender_lat' => $request->sender_lat, // Lấy từ ô ẩn trong form
+        'sender_lng' => $request->sender_lng, // Lấy từ ô ẩn trong form
 
-                // Mấy dòng cũ bên dưới sếp cứ giữ nguyên
-                'receiver_name' => $request->receiver_name,
-                'receiver_phone' => $request->receiver_phone,
-                'receiver_address' => $request->receiver_address,
-                'product_name' => $request->product_name,
-                'shipping_fee' => $totalFee,
-                'shipper' => $bestShipper,
-                'weight' => $weight,
-                'note' => $note,
+        // --- THÔNG TIN NGƯỜI NHẬN ---
+        'receiver_name' => $request->receiver_name,
+        'receiver_phone' => $request->receiver_phone,
+        'receiver_address' => $request->receiver_address,
+        'receiver_lat' => $request->receiver_lat,
+        'receiver_lng' => $request->receiver_lng, // 🔴 CÁI NÀY LÀ CÁI SẾP ĐANG THIẾU 🔴
+
+        // --- THÔNG TIN HÀNG HÓA ---
+        'product_name' => $request->product_name,
+        'shipping_fee' => $totalFee,
+        'shipper' => $bestShipper,
+        'weight' => $weight,
+        'note' => $note,
     ]);
 
     return redirect()->route('processing')->with('success', 'Đã tạo đơn và tính phí ship tự động!');
@@ -237,8 +242,13 @@ Route::post('/orders/optimize', function (Request $request) {
             'id' => '#REQ-' . $order->id,
             'weight' => (float) $order->weight,
             'tinh_chat' => stripos($order->note ?? '', 'dễ vỡ') !== false ? 'FRAGILE' : 'NORMAL',
-            'lat' => 16.05 + (rand(0, 50) / 1000),
-            'lng' => 108.20 + (rand(0, 50) / 1000)
+
+            // --- SỬA CHỖ NÀY: Lấy tọa độ thật từ DB, nếu NULL thì mới rand ---
+            'lat' => $order->receiver_lat ? (float)$order->receiver_lat : 16.05 + (rand(0, 50) / 1000),
+            'lng' => $order->receiver_lng ? (float)$order->receiver_lng : 108.20 + (rand(0, 50) / 1000),
+
+            's_lat' => $order->sender_lat ? (float)$order->sender_lat : 16.03 + (rand(0, 80) / 1000),
+            's_lng' => $order->sender_lng ? (float)$order->sender_lng : 108.15 + (rand(0, 80) / 1000)
         ];
     }
 
