@@ -3,7 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB; // <--- Thêm cái này để gọi Database
-use Illuminate\Support\Facades\DB; // Kéo thư viện DB vào để dùng giống Thái
 
 Route::redirect('/', '/login');
 

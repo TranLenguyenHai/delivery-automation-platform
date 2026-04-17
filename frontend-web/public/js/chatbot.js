@@ -65,9 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let count = numberMatch ? parseInt(numberMatch[0]) : null;
 
         // A. Kịch bản Check kho
-        if (rawMsg.includes("bao nhiêu") || rawMsg.includes("check") || rawMsg.includes("tình hình")) {
-            appendMsg('ai', `Báo cáo sếp Thai, tổng kho VKU hiện có <b>${orders.length} đơn</b>. Sếp muốn tối ưu mấy đơn? Cứ đọc số em làm ngay!`);
-        }
+
         if (rawMsg.includes("bao nhiêu") || rawMsg.includes("check") || rawMsg.includes("tình hình")) {
                     appendMsg('ai', `Báo cáo sếp Thai, tổng kho VKU hiện có <b>${orders.length} đơn</b>. Sếp muốn em <b>mở danh sách</b> chi tiết không?`);
                 }
@@ -107,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function() {
             await aiThinking(2);
 
             try {
-                const response = await fetch('https://piliform-subventricous-jimmie.ngrok-free.dev/webhook/toi-uu-logistics', {
+                const response = await fetch('https://c78448b64e7062.lhr.life/webhook/toi-uu-logistics', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ orders: orders.slice(0, num) })

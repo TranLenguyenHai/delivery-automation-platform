@@ -18,7 +18,7 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - WEBHOOK_URL=https://01db583222b03f.lhr.life
+      - WEBHOOK_URL=https://c78448b64e7062.lhr.life
       - N8N_PORT=5678
     volumes:
       - n8n_data:/home/node/.n8n
