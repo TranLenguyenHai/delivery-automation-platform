@@ -40,11 +40,12 @@
                     </a>
 
                     @php
-                        // Cập nhật để nhận diện 4 trang trong nhóm Đơn hàng (đã thay dashboard thành pending)
+                        // Cập nhật để nhận diện 5 trang trong nhóm Đơn hàng (đã thay dashboard thành pending)
                         $isOrderActive = request()->routeIs('pending') ||
                                          request()->routeIs('processing') ||
                                          request()->routeIs('status') ||
-                                         request()->routeIs('history');
+                                         request()->routeIs('history') ||
+                                         request()->routeIs('create_order');
                     @endphp
 
                     <div class="space-y-1">
@@ -76,6 +77,11 @@
                             <a href="{{ request()->routeIs('history') ? 'javascript:void(0)' : route('history') }}"
                                class="block py-2 text-sm {{ request()->routeIs('history') ? 'text-blue-400 font-bold cursor-default' : 'text-gray-400 hover:text-white' }} transition-colors">
                                Lịch sử đơn hàng
+                            </a>
+
+                            <a href="{{ request()->routeIs('create_order') ? 'javascript:void(0)' : route('create_order') }}"
+                               class="block py-2 text-sm {{ request()->routeIs('create_order') ? 'text-blue-400 font-bold cursor-default' : 'text-gray-400 hover:text-white' }} transition-colors">
+                               Tạo đơn hàng
                             </a>
 
                         </div>

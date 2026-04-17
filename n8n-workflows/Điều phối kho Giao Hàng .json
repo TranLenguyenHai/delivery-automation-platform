@@ -6,7 +6,7 @@
         "rule": {
           "interval": [
             {
-              "triggerAtMinute": 1
+              "triggerAtMinute": 5
             }
           ]
         }
@@ -17,7 +17,7 @@
         -864,
         352
       ],
-      "id": "b5a01ae4-3239-4d60-baac-d571d49bb4f1",
+      "id": "9c38c205-f2a0-4621-aafd-cd13f8674b7e",
       "name": "Schedule Trigger"
     },
     {
@@ -50,7 +50,7 @@
         224,
         352
       ],
-      "id": "74f889d8-5d99-437d-99db-778c72a68fc3",
+      "id": "bb172f33-e588-4684-a591-1d6581892419",
       "name": "If"
     },
     {
@@ -74,7 +74,7 @@
         608,
         96
       ],
-      "id": "bf45451a-a547-492a-a26d-19b03a6586fe",
+      "id": "510ba2ef-3f64-4420-bca8-b37a29089531",
       "name": "Edit Fields"
     },
     {
@@ -98,7 +98,7 @@
         608,
         240
       ],
-      "id": "1b524c71-edbe-4aa1-afc2-d8c5765c2674",
+      "id": "9e14d68a-9e38-4573-be63-ee175223143f",
       "name": "Edit Fields1"
     },
     {
@@ -109,7 +109,7 @@
         992,
         368
       ],
-      "id": "51f48e94-5302-4e63-b3da-ec80cefadc98",
+      "id": "c30e30fe-c50d-4a3e-9340-de44948917e6",
       "name": "Merge"
     },
     {
@@ -122,7 +122,7 @@
         -416,
         352
       ],
-      "id": "e67fd5ea-e30a-4db3-939f-91d42ebd1d86",
+      "id": "367ce982-c868-4dc8-ad3d-b376e3796c11",
       "name": "Loop Over Items"
     },
     {
@@ -164,7 +164,7 @@
         -224,
         96
       ],
-      "id": "0ffe2f77-9288-4b8b-8430-2d3bddaae915",
+      "id": "0e703413-22b8-4f70-bbfe-de43f64fee89",
       "name": "If1"
     },
     {
@@ -188,7 +188,7 @@
         -64,
         352
       ],
-      "id": "4174c39d-749f-44e9-a916-b91ef1bd65df",
+      "id": "c2e76d0a-70d8-4270-906e-a5fe3472160e",
       "name": "Edit Fields2"
     },
     {
@@ -212,7 +212,7 @@
         0,
         0
       ],
-      "id": "2f5ec2d1-2bc3-4f69-a8bf-0967d3641d97",
+      "id": "02565814-d6bb-410f-90f8-61a483395481",
       "name": "Edit Fields3"
     },
     {
@@ -231,7 +231,7 @@
         -912,
         752
       ],
-      "id": "31509051-06d9-4625-855e-6cc4cc6e36df",
+      "id": "98c62d39-38b6-4b76-9686-0f44e1eef201",
       "name": "Schedule Trigger1"
     },
     {
@@ -248,7 +248,7 @@
         -368,
         752
       ],
-      "id": "c6b0b0d1-98e9-4000-8e1d-16099090677d",
+      "id": "8b7672eb-5deb-481d-953d-e755ffdd9ea4",
       "name": "Send an Email",
       "webhookId": "d1fc92da-015a-4efa-b370-033ca3dde240",
       "credentials": {
@@ -269,7 +269,7 @@
         -656,
         352
       ],
-      "id": "bfa007a3-5223-4526-90e3-6ffd3d2decf4",
+      "id": "06f4edb4-5119-49f7-bcd6-936945e3fb29",
       "name": "Execute a SQL query4"
     },
     {
@@ -293,7 +293,7 @@
         240,
         96
       ],
-      "id": "c7c57234-b7b1-4276-8035-57c25b49d622",
+      "id": "74b127dc-2fad-4aaf-98d5-c755c76f2675",
       "name": "Execute a SQL query2"
     },
     {
@@ -317,7 +317,7 @@
         1200,
         368
       ],
-      "id": "80b197b9-0bb7-4815-8342-9dbd521ef52f",
+      "id": "78b352fc-9fdb-4645-a1e6-9897906676a8",
       "name": "Execute a SQL query"
     },
     {
@@ -331,7 +331,7 @@
         -640,
         752
       ],
-      "id": "b1378d7b-89a4-4d5a-b14a-18af49da7b5a",
+      "id": "31556c01-db68-47a6-ba36-9af8b10f739a",
       "name": "Execute a SQL query5"
     }
   ],
@@ -507,17 +507,16 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "a78bf593-c22f-48d0-80ae-a06276d7ca44",
+  "versionId": "a922cb5e-705e-4a12-ba35-ca094e5f2c27",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "41a423f4825653465e2469bf71de92a24ac991e284c54f9bff05c348b90ad7af"
   },
-  "id": "5vLYoGE57pudgQjO",
+  "id": "NqKYUHVdSDApwwKm",
   "tags": []
 }

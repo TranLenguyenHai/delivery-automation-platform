@@ -1,53 +1,73 @@
 <x-app-layout>
-    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Trạng thái vận chuyển</h1>
-            <p class="text-sm text-gray-500 mt-1">Theo dõi lộ trình đơn hàng và lịch sử giao hàng thành công.</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <button class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 shadow-sm transition-all flex items-center gap-2">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                Báo cáo giao hàng
-            </button>
-        </div>
+    <div class="mb-6">
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Trạng thái vận chuyển</h1>
+        <p class="text-sm text-gray-500 mt-1">Theo dõi các đơn hàng đã bàn giao cho đơn vị vận chuyển.</p>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
         <div class="flex border-b border-gray-200 px-2 overflow-x-auto bg-gray-50/30">
-            <button class="px-4 py-3.5 text-sm font-semibold text-blue-600 border-b-2 border-blue-600 whitespace-nowrap">Tất cả (0)</button>
-            <button class="px-4 py-3.5 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent transition-colors whitespace-nowrap">Đang giao (0)</button>
-            <button class="px-4 py-3.5 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent transition-colors whitespace-nowrap">Đã giao (0)</button>
-            <button class="px-4 py-3.5 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent transition-colors whitespace-nowrap">Giao không thành công (0)</button>
+            <button onclick="filterOrders('all', this)" class="tab-btn active-tab px-4 py-3.5 text-sm font-semibold text-blue-600 border-b-2 border-blue-600 whitespace-nowrap transition-colors">Tất cả đơn ({{ count($orders) }})</button>
+            <button onclick="filterOrders('Đang giao hàng', this)" class="tab-btn px-4 py-3.5 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition-colors whitespace-nowrap">Đang giao hàng</button>
+            <button onclick="filterOrders('Giao thành công', this)" class="tab-btn px-4 py-3.5 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition-colors whitespace-nowrap">Giao thành công</button>
+            <button onclick="filterOrders('Giao thất bại', this)" class="tab-btn px-4 py-3.5 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition-colors whitespace-nowrap">Giao thất bại</button>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider font-semibold">
-                        <th class="px-6 py-4 pl-8">Mã Đơn / Mã Vận Đơn</th>
+                        <th class="px-6 py-4 pl-8">Mã Đơn</th>
                         <th class="px-4 py-4">Khách hàng</th>
-                        <th class="px-4 py-4">Đơn vị vận chuyển</th>
-                        <th class="px-4 py-4 text-center">Trạng thái hiện tại</th>
-                        <th class="px-4 py-4 text-center">Cập nhật cuối</th>
-                        <th class="px-4 py-4 text-right pr-8">Thao tác</th>
+                        <th class="px-4 py-4 min-w-[200px]">Địa chỉ giao</th>
+                        <th class="px-4 py-4">Sản phẩm</th>
+                        <th class="px-4 py-4 text-center">Trạng thái</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 bg-white">
-
-                    <tr>
-                        <td colspan="6" class="px-6 py-20 text-center text-gray-500">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="bg-blue-50 p-4 rounded-full mb-4">
-                                    <svg class="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
-                                </div>
-                                <p class="text-lg font-bold text-gray-800">Đang theo dõi vận chuyển...</p>
-                                <p class="text-sm text-gray-400 mt-1 max-w-sm">Dữ liệu lộ trình sẽ được bot cập nhật tự động ngay khi shipper lấy hàng từ kho.</p>
-                            </div>
-                        </td>
-                    </tr>
-
+                <tbody class="divide-y divide-gray-100 bg-white" id="orders-table-body">
+                    @forelse ($orders as $order)
+                        <tr class="order-row hover:bg-blue-50/30 transition-colors" data-status="{{ $order->status }}">
+                            <td class="px-6 py-4 pl-8">
+                                <div class="font-bold text-blue-600">#REQ-{{ $order->id }}</div>
+                            </td>
+                            <td class="px-4 py-4">
+                                <div class="text-sm font-semibold text-gray-900">{{ $order->receiver_name ?? 'Khách lẻ' }}</div>
+                                <div class="text-xs text-gray-500">{{ $order->receiver_phone }}</div>
+                            </td>
+                            <td class="px-4 py-4">
+                                <div class="text-sm text-gray-600 truncate max-w-[250px]" title="{{ $order->receiver_address }}">{{ $order->receiver_address }}</div>
+                            </td>
+                            <td class="px-4 py-4 text-sm text-gray-900">{{ $order->product_name }}</td>
+                            <td class="px-4 py-4 text-center">
+                                @php
+                                    $bg = 'bg-blue-100 text-blue-700 border-blue-200';
+                                    if($order->status === 'Giao thành công') $bg = 'bg-green-100 text-green-700 border-green-200';
+                                    if($order->status === 'Giao thất bại') $bg = 'bg-red-100 text-red-700 border-red-200';
+                                @endphp
+                                <span class="px-3 py-1 text-xs font-bold rounded-full border shadow-sm {{ $bg }}">{{ $order->status }}</span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="px-6 py-16 text-center text-gray-500">Chưa có dữ liệu vận chuyển.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        function filterOrders(statusFilter, clickedBtn) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(tab => {
+                tab.classList.remove('text-blue-600', 'border-blue-600', 'font-semibold');
+                tab.classList.add('text-gray-500', 'border-transparent', 'font-medium');
+            });
+            clickedBtn.classList.remove('text-gray-500', 'border-transparent', 'font-medium');
+            clickedBtn.classList.add('text-blue-600', 'border-blue-600', 'font-semibold');
+
+            const rows = document.querySelectorAll('.order-row');
+            rows.forEach(row => {
+                row.style.display = (statusFilter === 'all' || row.getAttribute('data-status') === statusFilter) ? '' : 'none';
+            });
+        }
+    </script>
 </x-app-layout>

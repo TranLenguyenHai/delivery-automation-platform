@@ -20,7 +20,7 @@
         <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
         </div>
-        <div class="ml-3 text-sm font-semibold text-gray-800" id="toast-message">Đã xác nhận đơn hàng thành công.</div>
+        <div class="ml-3 text-sm font-semibold text-gray-800" id="toast-message">Cập nhật thành công.</div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
@@ -35,6 +35,7 @@
                         <th class="px-4 py-4 text-center">Khối lượng</th>
                         <th class="px-4 py-4 text-center">Dễ vỡ</th>
                         <th class="px-4 py-4 text-center">Chọn</th>
+                        <th class="px-4 py-4 text-center text-red-500">Xóa</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 bg-white" id="orders-table-body">
@@ -63,7 +64,7 @@
                             </td>
                             <td class="px-4 py-4 text-center">
                                 <span class="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded">
-                                    {{ $order->weight ?? $order->packageWeight ?? 0 }} kg
+                                    {{ $order->weight ?? $order->packageWeight ?? 0 }} gram
                                 </span>
                             </td>
                             <td class="px-4 py-4 text-center">
@@ -77,13 +78,18 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-4 py-4 text-center pr-6">
+                            <td class="px-4 py-4 text-center pr-2">
                                 <input type="checkbox" class="order-checkbox w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all hover:scale-110" value="{{ $order->id }}">
+                            </td>
+                            <td class="px-4 py-4 text-center pr-6">
+                                <button onclick="deleteOrderPermanently({{ $order->id }})" class="p-2 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa vĩnh viễn đơn rác">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
                             </td>
                         </tr>
                     @empty
                         <tr id="empty-state">
-                            <td colspan="7" class="px-6 py-16 text-center text-gray-500">
+                            <td colspan="8" class="px-6 py-16 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center">
                                     <div class="bg-gray-50 p-4 rounded-full mb-3">
                                         <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
@@ -100,6 +106,43 @@
     </div>
 
     <script>
+        // Hàm Xóa Vĩnh Viễn Đơn Rác
+        function deleteOrderPermanently(id) {
+            if (confirm('Sếp có chắc chắn muốn xóa VĨNH VIỄN đơn rác này không? Không thể khôi phục lại đâu nhé!')) {
+                fetch('{{ route('orders.destroy') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ ids: [id] })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const row = document.getElementById('row-' + id);
+                        row.style.transition = 'all 0.3s';
+                        row.style.opacity = '0';
+                        row.style.transform = 'scale(0.95)';
+                        setTimeout(() => row.remove(), 300);
+
+                        // Hiển thị toast
+                        const toast = document.getElementById('toast-success');
+                        document.getElementById('toast-message').textContent = 'Đã xóa vĩnh viễn đơn rác.';
+                        toast.classList.remove('opacity-0', 'translate-x-full');
+                        toast.classList.add('opacity-100', 'translate-x-0');
+                        setTimeout(() => {
+                            toast.classList.remove('opacity-100', 'translate-x-0');
+                            toast.classList.add('opacity-0', 'translate-x-full');
+                        }, 3000);
+                    } else {
+                        alert('Lỗi: Không thể xóa đơn hàng!');
+                    }
+                });
+            }
+        }
+
+        // Hàm Xác nhận đơn hàng (Giữ nguyên của ông)
         function confirmSelected() {
             const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
             const count = checkedBoxes.length;
@@ -109,36 +152,43 @@
                 return;
             }
 
-            checkedBoxes.forEach(box => {
-                const row = box.closest('tr');
-                row.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(30px)';
+            const orderIds = Array.from(checkedBoxes).map(box => box.value);
 
-                setTimeout(() => {
-                    row.remove();
-                    if(document.querySelectorAll('.order-checkbox').length === 0) {
-                        // Tùy chọn: Hiện lại empty state nếu xóa hết
-                    }
-                }, 400);
-            });
+            fetch('{{ route("orders.confirm") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ ids: orderIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    checkedBoxes.forEach(box => {
+                        const row = box.closest('tr');
+                        row.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(30px)';
+                        setTimeout(() => {
+                            row.remove();
+                        }, 400);
+                    });
 
-            const toast = document.getElementById('toast-success');
-            const toastMsg = document.getElementById('toast-message');
-            toastMsg.textContent = `Đã chuyển thành công ${count} đơn hàng sang Đang xử lý.`;
-
-            toast.classList.remove('opacity-0', 'translate-x-full');
-            toast.classList.add('opacity-100', 'translate-x-0');
-
-            setTimeout(() => {
-                toast.classList.remove('opacity-100', 'translate-x-0');
-                toast.classList.add('opacity-0', 'translate-x-full');
-            }, 3000);
+                    const toast = document.getElementById('toast-success');
+                    document.getElementById('toast-message').textContent = `Đã chuyển thành công ${count} đơn hàng sang kho.`;
+                    toast.classList.remove('opacity-0', 'translate-x-full');
+                    toast.classList.add('opacity-100', 'translate-x-0');
+                    setTimeout(() => {
+                        toast.classList.remove('opacity-100', 'translate-x-0');
+                        toast.classList.add('opacity-0', 'translate-x-full');
+                    }, 3000);
+                } else {
+                    alert('Có lỗi xảy ra, không thể cập nhật CSDL!');
+                }
+            })
+            .catch(error => alert('Không thể kết nối đến máy chủ!'));
         }
     </script>
-<script>
-    window.phpOrders = @json($orders);
-</script>
-
 <script src="{{ asset('js/chatbot.js') }}"></script>
 </x-app-layout>
