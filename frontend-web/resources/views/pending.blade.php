@@ -1,4 +1,5 @@
 <x-app-layout>
+    <link rel="stylesheet" href="{{ asset('css/chatbot.css') }}">
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
         <div>
             <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Đơn hàng chờ xác nhận</h1>
@@ -190,5 +191,11 @@
             .catch(error => alert('Không thể kết nối đến máy chủ!'));
         }
     </script>
-<script src="{{ asset('js/chatbot.js') }}"></script>
+<script>
+        window.phpOrders = @json($orders);
+    </script>
+
+    <x-chatbot />
+
+    <script src="{{ asset('js/chatbot.js') }}"></script>
 </x-app-layout>

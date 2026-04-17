@@ -262,8 +262,11 @@
                 });
             }
         }
-    </script>
+    <script>
+            window.phpOrders = @json($orders);
+        </script>
 
-    <x-chatbot />
-    <script src="{{ asset('js/chatbot.js') }}"></script>
+        <x-chatbot />
+
+        <script src="{{ asset('js/chatbot.js') }}"></script>
 </x-app-layout>

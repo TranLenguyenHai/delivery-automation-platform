@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http; // BẮT BUỘC THÊM ĐỂ GỌI N8N
-
+use Illuminate\Support\Facades\View;
 Route::redirect('/', '/login');
 
 Route::get('/dashboard', function () {
@@ -166,14 +166,22 @@ Route::post('/orders/store', function (Request $request) {
 
     DB::table('orders')->insert([
         'status' => 'Chờ in đơn',
-        'receiver_name' => $request->receiver_name,
-        'receiver_phone' => $request->receiver_phone,
-        'receiver_address' => $request->receiver_address,
-        'product_name' => $request->product_name,
-        'shipping_fee' => $totalFee,
-        'shipper' => $bestShipper,
-        'weight' => $weight,
-        'note' => $note,
+
+                // --- THÊM 3 DÒNG NÀY ĐỂ HỨNG DỮ LIỆU NGƯỜI GỬI SẾP NHÉ ---
+                'sender_name' => $request->sender_name,
+                'sender_phone' => $request->sender_phone,
+                'sender_address' => $request->sender_address,
+                // --------------------------------------------------------
+
+                // Mấy dòng cũ bên dưới sếp cứ giữ nguyên
+                'receiver_name' => $request->receiver_name,
+                'receiver_phone' => $request->receiver_phone,
+                'receiver_address' => $request->receiver_address,
+                'product_name' => $request->product_name,
+                'shipping_fee' => $totalFee,
+                'shipper' => $bestShipper,
+                'weight' => $weight,
+                'note' => $note,
     ]);
 
     return redirect()->route('processing')->with('success', 'Đã tạo đơn và tính phí ship tự động!');
@@ -284,5 +292,22 @@ Route::post('/orders/cancel', function (Request $request) {
     }
     return response()->json(['success' => false], 400);
 })->name('orders.cancel');
+
+
+View::composer('*', function ($view) {
+    // 1. Lấy đơn "Chưa xử lý" (Trạng thái: Chờ điều phối, Chờ in đơn...)
+    $pendingOrders = DB::table('orders')
+        ->whereIn('status', ['Chờ điều phối', 'Chờ in đơn', 'Chờ lấy hàng', 'Đang thẩm định AI...'])
+        ->get();
+
+    // 2. Lấy đơn "Đã xử lý" (Trạng thái: Đang giao hàng, Giao thành công...)
+    $processedOrders = DB::table('orders')
+        ->whereIn('status', ['Đang giao hàng', 'Giao thành công', 'Giao thất bại'])
+        ->get();
+
+    // Bơm cả 2 mảng này vào view
+    $view->with('globalPendingOrders', $pendingOrders)
+         ->with('globalProcessedOrders', $processedOrders);
+});
 
 require __DIR__.'/auth.php';

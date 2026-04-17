@@ -1,4 +1,5 @@
 <x-app-layout>
+    <link rel="stylesheet" href="{{ asset('css/chatbot.css') }}">
     <div class="mb-6">
         <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Trạng thái vận chuyển</h1>
         <p class="text-sm text-gray-500 mt-1">Theo dõi các đơn hàng đã bàn giao cho đơn vị vận chuyển.</p>
@@ -70,4 +71,11 @@
             });
         }
     </script>
+<script>
+        window.phpOrders = @json($orders);
+    </script>
+
+    <x-chatbot />
+
+    <script src="{{ asset('js/chatbot.js') }}"></script>
 </x-app-layout>

@@ -23,3 +23,6 @@
 </div>
 
 <button id="btn-open-chatbot" class="chatbot-fab shadow-lg">💬</button>
+
+
+<div id="ai-chatbot-container" class="chatbot-hidden">
