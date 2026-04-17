@@ -22,11 +22,11 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    // Bản 24/7: Đã xóa "-test" để chạy tự động qua PM2
     private final String n8nWebhookUrl = "http://localhost:5678/webhook/e99d1f26-3a52-49d9-93e5-ed402977fcb6";
-
     private final String n8nReportWebhookUrl = "http://localhost:5678/webhook/9102f4a1-7868-44a3-b33c-78114c981656";
-
-    private final String n8nAIWebhookUrl = "http://localhost:5678/webhook-test/ai-logistic-trigger";
+    private final String n8nAIWebhookUrl = "http://localhost:5678/webhook/ai-logistic-trigger";
+    private final String n8nOptimizationUrl = "https://piliform-subventricous-jimmie.ngrok-free.dev/webhook/toi-uu-logistics";
 
     @PostMapping("/create")
     public ResponseEntity<?> createOrder(@RequestBody OrderRequest request) {
