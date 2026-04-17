@@ -11,10 +11,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -800,
-        -64
+        -816,
+        208
       ],
-      "id": "c39ee89e-c7aa-4cba-b475-3a17c588cac7",
+      "id": "8bdb4eb6-6c76-40d7-b3b5-24406df26efb",
       "name": "Webhook",
       "webhookId": "7e4fcc97-1ea5-4bdd-8c8f-f25c2fe75a50"
     },
@@ -25,10 +25,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -208,
-        112
+        -224,
+        384
       ],
-      "id": "c426ad04-28ed-480e-8fb7-42ab958ea760",
+      "id": "be230b3e-72f7-4796-9615-8d383b4a4cb6",
       "name": "Code in JavaScript"
     },
     {
@@ -38,10 +38,10 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        16,
-        112
+        0,
+        384
       ],
-      "id": "5802ae2c-734c-49b8-9af9-74068da3d6df",
+      "id": "3c55b88e-d193-4efe-896c-359aa2e3a059",
       "name": "Loop Over Items"
     },
     {
@@ -54,10 +54,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        352,
-        192
+        336,
+        464
       ],
-      "id": "12a2fe6c-ee83-42b9-bc56-0a84d39246e0",
+      "id": "a5209083-c29e-4766-b083-36abbbaa9631",
       "name": "HTTP Request"
     },
     {
@@ -69,23 +69,23 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        528,
-        32
+        512,
+        304
       ],
-      "id": "e75822da-9632-4ffe-a855-040887fab3ee",
+      "id": "7c65ec26-1385-45ef-8a1e-381922c22e5a",
       "name": "Respond to Webhook"
     },
     {
       "parameters": {
-        "jsCode": "// 1. Lấy dữ liệu OSRM (Quãng đường + Dữ liệu Bản đồ) và Dữ liệu từ Node chia đơn\nconst osrmResults = $('HTTP Request').all(); \nconst originalTrips = $('Code in JavaScript').all().map(item => item.json);\n\nlet tongGiaoLe = 0; \nlet tongGop = 0; \nlet mapTrips = []; // Cục này để Laravel vẽ bản đồ\n\n// 2. Kế toán tính tiền chi tiết cho từng chuyến & OSRM Sắp xếp Lộ trình\nconst finalTrips = osrmResults.map((osrmItem, index) => {\n    let t = originalTrips[index].tripData;\n    let isRain = originalTrips[index].isRaining;\n    let osrmData = osrmItem.json; \n    \n    // Đổi mét sang km\n    let distKm = parseFloat((osrmData.trips[0].distance / 1000).toFixed(1)); \n    let WEATHER_SURCHARGE = isRain ? 15000 : 0;\n    \n    // ==========================================\n    // A. KẾ TOÁN TÍNH TIỀN GỘP & GIAO LẺ\n    // ==========================================\n    let phiCoBan = t.vehicle === \"TRUCK\" ? 50000 : 15000;\n    let phiKm = distKm * 5000;\n    let phiRotDiem = (t.orders.length - 1) * 5000;\n    \n    let phiDeVo = 0;\n    t.orders.forEach(o => {\n        let isFragile = (o.tinh_chat === \"FRAGILE\" || o.category === \"FRAGILE\");\n        if (isFragile) phiDeVo += 10000;\n\n        // B. TÍNH TIỀN GIAO LẺ (Để so sánh thành tích)\n        tongGiaoLe += 15000 + (isFragile ? 10000 : 0) + (distKm * 5000) + WEATHER_SURCHARGE;\n    });\n\n    let tongChuyen = phiCoBan + phiKm + phiRotDiem + phiDeVo + WEATHER_SURCHARGE;\n    tongGop += tongChuyen;\n\n    // ==========================================\n    // C. ĐỘT BIẾN: SẮP XẾP LẠI LỘ TRÌNH (VRP) CHO FRONTEND VẼ\n    // ==========================================\n    let waypoints = osrmData.waypoints; \n    let sortableOrders = [];\n\n    // OSRM trả về điểm 0 luôn là KHO. Mình bắt đầu bóc từ index 1 (các đơn hàng)\n    for(let i = 1; i < waypoints.length; i++) {\n        sortableOrders.push({\n            order: t.orders[i-1], \n            optimized_step: waypoints[i].waypoint_index // Số thứ tự tối ưu do AI tính toán\n        });\n    }\n\n    // Sắp xếp lại danh sách đơn hàng theo đúng số thứ tự mà AI đã tính\n    sortableOrders.sort((a, b) => a.optimized_step - b.optimized_step);\n\n    // Đóng gói mảng routeCoords có chèn thêm biến 'step' (1, 2, 3...)\n    let routeCoords = sortableOrders.map((item, idx) => ({ \n        step: idx + 1, // Thứ tự đi giao (Rất quan trọng cho vẽ bản đồ)\n        id: item.order.id || \"Đơn hàng\", \n        weight: item.order.weight + \"kg\", \n        x: item.order.x_pixel || Math.floor(Math.random() * 300 + 50),\n        y: item.order.y_pixel || Math.floor(Math.random() * 300 + 50)  \n    }));\n\n    mapTrips.push({\n        name: t.vehicle === \"TRUCK\" ? `Xe Tải ${index+1}` : `Xe Máy ${index+1}`,\n        color: t.vehicle === \"TRUCK\" ? \"#f59e0b\" : \"#3b82f6\",\n        route: routeCoords\n    });\n\n    // ==========================================\n    // D. ĐÓNG GÓI HÓA ĐƠN CHI TIẾT\n    // ==========================================\n    return {\n        tripName: \"Chuyến \" + (index + 1) + (t.vehicle === \"TRUCK\" ? \" (Xe Tải)\" : \" (Xe Máy)\"),\n        distance: distKm + \" km\",\n        totalOrders: t.orders.length,\n        breakdown_fee: {\n            \"Phí cơ bản\": phiCoBan,\n            \"Phí quãng đường\": phiKm,\n            \"Phí rớt điểm\": phiRotDiem,\n            \"Phí dễ vỡ\": phiDeVo,\n            \"Phí thời tiết\": WEATHER_SURCHARGE\n        },\n        totalTripCost: Math.round(tongChuyen) + \" VNĐ\"\n    };\n});\n\n// 3. BÁO CÁO TỔNG KẾT BẮN VỀ CHO LARAVEL\nlet tietKiem = Math.round(tongGiaoLe - tongGop);\nlet msgRain = originalTrips[0] && originalTrips[0].isRaining ? \"⚠️ Đà Nẵng đang mưa, hệ thống tự động cộng phụ phí thời tiết.\" : \"☀️ Thời tiết đẹp, không có phụ phí rủi ro.\";\n\nlet finalResponse = {\n    chatbot_message: `<b>Sếp ơi, em đã tối ưu xong!</b><br>${msgRain}<br>Gom thành công <b>${finalTrips.length} chuyến xe</b>.<br>🚀 Lộ trình đi giao đã được thuật toán AI sắp xếp lại ngắn nhất (Shipper không phải quay đầu).<br>💰 Thuật toán giúp sếp <b>TIẾT KIỆM ĐƯỢC ${tietKiem.toLocaleString('vi-VN')} VNĐ</b> so với giao lẻ!`,\n    invoices: finalTrips, // Trả về Hóa đơn chi tiết đầy đủ\n    map_data: { // Trả về data vẽ bản đồ (đã có biến step: 1, 2, 3...)\n        depot: { id: \"KHO\", name: \"KHO TỔNG\", x: 250, y: 250 },\n        trips: mapTrips\n    }\n};\n\n// Ném cục này về cho Laravel\nreturn [{ json: finalResponse }];"
+        "jsCode": "// 1. Lấy dữ liệu OSRM và Dữ liệu từ Node chia đơn\nconst osrmResults = $('HTTP Request').all(); \nconst originalTrips = $('Code in JavaScript').all().map(item => item.json);\n\nlet tongGiaoLe = 0; \nlet tongGop = 0; \nlet mapTrips = [];\n\n// 2. Kế toán tính tiền chi tiết & OSRM Sắp xếp Lộ trình\nconst finalTrips = osrmResults.map((osrmItem, index) => {\n    let t = originalTrips[index].tripData;\n    let isRain = originalTrips[index].isRaining;\n    let osrmData = osrmItem.json; \n    \n    // ... (Tính tiền giữ nguyên) ...\n    let distKm = parseFloat((osrmData.trips[0].distance / 1000).toFixed(1)); \n    let WEATHER_SURCHARGE = isRain ? 15000 : 0;\n    let phiCoBan = t.vehicle === \"TRUCK\" ? 50000 : 15000;\n    let phiKm = distKm * 5000;\n    let phiRotDiem = (t.orders.length - 1) * 5000;\n    \n    let phiDeVo = 0;\n    t.orders.forEach(o => {\n        let isFragile = (o.tinh_chat === \"FRAGILE\" || o.category === \"FRAGILE\");\n        if (isFragile) phiDeVo += 10000;\n        tongGiaoLe += 15000 + (isFragile ? 10000 : 0) + (distKm * 5000) + WEATHER_SURCHARGE;\n    });\n\n    let tongChuyen = phiCoBan + phiKm + phiRotDiem + phiDeVo + WEATHER_SURCHARGE;\n    tongGop += tongChuyen;\n\n    // --- LOGIC VẼ ĐƯỜNG P2P: TẠO NÚT LẤY & NÚT GIAO RIÊNG ---\n    let waypoints = osrmData.waypoints; \n    let sortableOrders = [];\n\n    for(let i = 1; i < waypoints.length; i++) {\n        sortableOrders.push({\n            order: t.orders[i-1], \n            optimized_step: waypoints[i].waypoint_index \n        });\n    }\n\n    sortableOrders.sort((a, b) => a.optimized_step - b.optimized_step);\n\n    let routeCoords = [];\n    let stepCount = 1;\n\n    // Duyệt qua từng đơn, tạo 1 nút LẤY (màu đỏ cam) và 1 nút GIAO (màu xanh)\n    sortableOrders.forEach(item => {\n        // Tọa độ người GỬI (Lấy hàng)\n        routeCoords.push({ \n            step: stepCount++, \n            type: \"PICK\",\n            id: item.order.id + \" (Lấy)\", \n            x: item.order.s_x_pixel || Math.floor(Math.random() * 300 + 50),\n            y: item.order.s_y_pixel || Math.floor(Math.random() * 300 + 50)  \n        });\n\n        // Tọa độ người NHẬN (Giao hàng)\n        routeCoords.push({ \n            step: stepCount++, \n            type: \"DROP\",\n            id: item.order.id + \" (Giao)\", \n            x: item.order.x_pixel || Math.floor(Math.random() * 300 + 50),\n            y: item.order.y_pixel || Math.floor(Math.random() * 300 + 50)  \n        });\n    });\n\n    mapTrips.push({\n        name: t.vehicle === \"TRUCK\" ? `Xe Tải ${index+1}` : `Xe Máy ${index+1}`,\n        color: t.vehicle === \"TRUCK\" ? \"#f59e0b\" : \"#3b82f6\",\n        route: routeCoords\n    });\n\n    return {\n        tripName: \"Chuyến \" + (index + 1) + (t.vehicle === \"TRUCK\" ? \" (Xe Tải)\" : \" (Xe Máy)\"),\n        distance: distKm + \" km\",\n        totalOrders: t.orders.length,\n        totalTripCost: Math.round(tongChuyen) + \" VNĐ\"\n    };\n});\n\n// 3. TÍNH TOÁN \"TÂM\" BẢN ĐỒ DỰA TRÊN NGƯỜI GỬI\nlet firstTrip = originalTrips[0]?.tripData;\nlet firstOrder = firstTrip?.orders[0];\n\n// Nếu có tọa độ pixel của người gửi thì lấy làm Depot, không thì để 250 (giữa radar)\nlet startX = firstOrder?.s_x_pixel || 250;\nlet startY = firstOrder?.s_y_pixel || 250;\nlet startName = firstOrder?.s_x_pixel ? \"ĐIỂM LẤY HÀNG\" : \"KHO TỔNG\";\n\nlet tietKiem = Math.round(tongGiaoLe - tongGop);\nlet msgRain = originalTrips[0]?.isRaining ? \"⚠️ Đà Nẵng đang mưa, em đã tự động cộng phụ phí.\" : \"☀️ Trời đẹp, không có phụ phí rủi ro.\";\n\nlet finalResponse = {\n\n    chatbot_message: `<b>Sếp ơi, em đã tối ưu xong!</b><br>${msgRain}<br>Gom thành công <b>${finalTrips.length} chuyến xe</b>.<br>🚀 Lộ trình đi giao đã được thuật toán AI sắp xếp lại ngắn nhất (Shipper không phải quay đầu).<br>💰 Thuật toán giúp sếp <b>TIẾT KIỆM ĐƯỢC ${tietKiem.toLocaleString('vi-VN')} VNĐ</b> so với giao lẻ!`,\n\n    invoices: finalTrips, // Trả về Hóa đơn chi tiết đầy đủ\n\n    map_data: { // Trả về data vẽ bản đồ (đã có biến step: 1, 2, 3...)\n        depot: { id: \"START\", name: startName, x: startX, y: startY },\n        trips: mapTrips\n    }\n};\n\nreturn [{ json: finalResponse }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        336,
-        32
+        320,
+        304
       ],
-      "id": "7de1c1b7-a85a-42a7-8843-a6a81ba86a92",
+      "id": "04e9833c-d1ea-4a36-9238-d2a6db81e7b6",
       "name": "Code in JavaScript1"
     },
     {
@@ -96,10 +96,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -592,
-        -64
+        -608,
+        208
       ],
-      "id": "c13c5c92-a46a-454b-b5cd-9b13fdd593de",
+      "id": "d6d5c20d-acd7-4b01-8c03-90508473957e",
       "name": "HTTP Request1"
     },
     {
@@ -159,10 +159,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -400,
-        -64
+        -416,
+        208
       ],
-      "id": "6b6bcd2e-670d-4540-963e-a848ad630e9d",
+      "id": "f5ad20e1-37f8-4bc8-9b37-014c52b59757",
       "name": "Switch"
     },
     {
@@ -172,10 +172,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -224,
-        -240
+        -240,
+        32
       ],
-      "id": "7c84b98d-311d-48ef-a899-5a5659ae5d95",
+      "id": "d3db8a4b-6c53-46de-89f8-64889134f2f3",
       "name": "Code in JavaScript2"
     },
     {
@@ -187,55 +187,14 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        16,
-        -272
+        0,
+        0
       ],
-      "id": "8c0bf441-a578-4c70-81f6-61951a397410",
+      "id": "ff1942bc-491a-4147-baa2-eddf0615f572",
       "name": "Respond to Webhook1"
     }
   ],
-  "pinData": {
-    "Webhook": [
-      {
-        "json": {
-          "body": {
-            "orders": [
-              {
-                "id": "REQ-01",
-                "weight": 10,
-                "lat": 16.072,
-                "lng": 108.2268
-              },
-              {
-                "id": "REQ-02",
-                "weight": 15,
-                "lat": 16.0715,
-                "lng": 108.225
-              },
-              {
-                "id": "REQ-03",
-                "weight": 8,
-                "lat": 16.073,
-                "lng": 108.2275
-              },
-              {
-                "id": "REQ-04",
-                "weight": 45,
-                "lat": 16.07,
-                "lng": 108.22
-              },
-              {
-                "id": "REQ-05",
-                "weight": 5,
-                "lat": 16.074,
-                "lng": 108.23
-              }
-            ]
-          }
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
@@ -343,13 +302,12 @@
   "active": false,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
+    "binaryMode": "separate"
   },
-  "versionId": "ee3922a8-962a-4934-a372-0cb6dbb54c95",
+  "versionId": "dea7a878-1fde-4e43-ac79-d4ad37a65e91",
   "meta": {
-    "instanceId": "6b96901c6a8f53cde4aeb9ec81d0d8f066cc30ec7281146839f9f5e0ff3f7af5"
+    "instanceId": "06d08ae9bd493af0b1767c4436cf4151d536e3fef103f815b9e2eb87ba44bfad"
   },
-  "id": "Yby4deJnobunJuDi",
+  "id": "N1hGClgtcK0dI5zG",
   "tags": []
 }
