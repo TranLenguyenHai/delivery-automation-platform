@@ -86,7 +86,37 @@ Route::post('/orders/store', function (Request $request) {
 Route::post('/orders/confirm', function (Request $request) {
     if (!empty($request->ids)) {
         DB::table('orders')->whereIn('id', $request->ids)->update(['status' => 'Chờ in đơn']);
-        return response()->json(['success' => true]);
+        
+        $results = [];
+        foreach ($request->ids as $id) {
+            $order = DB::table('orders')->where('id', $id)->first();
+            if ($order) {
+                try {
+                    $webhookUrl = 'http://127.0.0.1:5678/webhook/ai-logistic-trigger';
+                    $response = Http::timeout(120)->post($webhookUrl, ['orderId' => $id, 'distance' => 17]);
+                    if ($response->status() == 404) {
+                        $webhookUrl = 'http://127.0.0.1:5678/webhook-test/ai-logistic-trigger';
+                        $response = Http::timeout(120)->post($webhookUrl, ['orderId' => $id, 'distance' => 17]);
+                    }
+                    if ($response->successful()) {
+                        $aiData = $response->json();
+                        $results[] = [
+                            'id' => $id,
+                            'tinh_chat_hang' => $aiData['tinh_chat_hang'] ?? (str_contains(mb_strtolower($order->note ?? ''), 'dễ vỡ') ? 'FRAGILE' : 'NORMAL'),
+                            'thoi_tiet' => $aiData['thoi_tiet'] ?? 'Bình thường',
+                            'quang_duong' => $aiData['quang_duong'] ?? 17,
+                            'tong_tien' => (int)($aiData['tong_tien'] ?? $aiData['cuoc_phi'] ?? 25000)
+                        ];
+                    } else {
+                        $results[] = ['id' => $id, 'tinh_chat_hang' => str_contains(mb_strtolower($order->note ?? ''), 'dễ vỡ') ? 'FRAGILE' : 'NORMAL', 'thoi_tiet' => 'Bình thường', 'quang_duong' => 17, 'tong_tien' => 25000];
+                    }
+                } catch (\Exception $e) {
+                    $results[] = ['id' => $id, 'tinh_chat_hang' => str_contains(mb_strtolower($order->note ?? ''), 'dễ vỡ') ? 'FRAGILE' : 'NORMAL', 'thoi_tiet' => 'Bình thường', 'quang_duong' => 17, 'tong_tien' => 25000];
+                }
+            }
+        }
+        
+        return response()->json(['success' => true, 'results' => $results]);
     }
     return response()->json(['success' => false], 400);
 })->name('orders.confirm');
@@ -98,6 +128,15 @@ Route::post('/orders/print', function (Request $request) {
     }
     return response()->json(['success' => false], 400);
 })->name('orders.print');
+
+Route::get('/orders/print-labels', function (Request $request) {
+    if (!$request->has('ids') || empty($request->ids)) {
+        return redirect()->route('processing')->with('error', 'Không có đơn hàng nào được chọn!');
+    }
+    $ids = explode(',', $request->ids);
+    $orders = DB::table('orders')->whereIn('id', $ids)->get();
+    return view('print_labels', compact('orders'));
+})->name('orders.print_labels');
 
 Route::post('/orders/handover', function (Request $request) {
     if (!empty($request->ids)) {
@@ -116,7 +155,7 @@ Route::post('/orders/complete', function (Request $request) {
 
                 try {
                     // Cập nhật URL Webhook Telegram mới của bạn
-                    Http::timeout(10)->post('https://piliform-subventricous-jimmie.ngrok-free.dev/webhook/627dd940-97f9-472c-b88b-93f953d7520a/webhook', [
+                    Http::timeout(10)->post('http://127.0.0.1:5678/webhook/627dd940-97f9-472c-b88b-93f953d7520a/webhook', [
                         'id_don' => '#REQ-' . $order->id,
                         'thoi_gian' => date('d/m/Y H:i:s'),
                         'khoi_luong' => (float) $order->weight,
@@ -159,10 +198,10 @@ Route::post('/orders/optimize', function (Request $request) {
         $order = DB::table('orders')->where('id', $id)->first();
         if ($order) {
             try {
-                $webhookUrl = 'https://piliform-subventricous-jimmie.ngrok-free.dev/webhook/ai-logistic-trigger';
+                $webhookUrl = 'http://127.0.0.1:5678/webhook/ai-logistic-trigger';
                 $response = Http::timeout(120)->post($webhookUrl, ['orderId' => $id, 'distance' => 17]);
                 if ($response->status() == 404) {
-                    $webhookUrl = 'https://piliform-subventricous-jimmie.ngrok-free.dev/webhook-test/ai-logistic-trigger';
+                    $webhookUrl = 'http://127.0.0.1:5678/webhook-test/ai-logistic-trigger';
                     $response = Http::timeout(120)->post($webhookUrl, ['orderId' => $id, 'distance' => 17]);
                 }
                 if ($response->successful()) {

@@ -236,6 +236,10 @@
 
             const orderIds = Array.from(checkedBoxes).map(box => box.value);
 
+            // Mở trang in vận đơn
+            window.open('/orders/print-labels?ids=' + orderIds.join(','), '_blank');
+
+            // Sau khi mở trang in, tự động cập nhật trạng thái
             fetch('{{ route("orders.print") }}', {
                 method: 'POST',
                 headers: {
@@ -257,8 +261,9 @@
                         badge.classList.replace('border-yellow-200', 'border-blue-200');
                         box.checked = false;
                     });
-                    showToast(`Đã in thành công ${orderIds.length} đơn hàng.`);
+                    showToast(`Đã chuyển ${orderIds.length} đơn hàng sang "Chờ lấy hàng".`);
                     filterOrders(currentTabStatus, document.querySelector('.active-tab'));
+                    updateActionBar();
                 }
             });
         }
