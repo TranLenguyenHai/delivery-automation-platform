@@ -32,7 +32,7 @@ apt-get update -qq
 apt-get install -y software-properties-common curl
 add-apt-repository ppa:ondrej/php -y
 apt-get update -qq
-apt-get install -y php8.2-cli php8.2-curl php8.2-xml php8.2-mbstring php8.2-pgsql php8.2-zip php8.2-bcmath unzip
+apt-get install -y php8.3-cli php8.3-curl php8.3-xml php8.3-mbstring php8.3-pgsql php8.3-zip php8.3-bcmath unzip
 php -v
 
 # ---- BƯỚC 3: Cài Composer ----
