@@ -1,5 +1,5 @@
 {
-  "name": "AI Smart Logistics",
+  "name": "AI Logistics",
   "nodes": [
     {
       "parameters": {
@@ -9,10 +9,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -1520,
-        -144
+        -3504,
+        -80
       ],
-      "id": "028c3df4-97bc-4d65-b957-dc7b85b1b45f",
+      "id": "628da7b2-d56e-4a14-a87f-81a3426f663f",
       "name": "HTTP Request"
     },
     {
@@ -42,10 +42,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -304,
-        -144
+        -2288,
+        -80
       ],
-      "id": "5f8a6b98-916f-4d95-910d-706ba0013ef0",
+      "id": "a9022b34-7ad3-4204-af92-84d4fec75260",
       "name": "If"
     },
     {
@@ -65,10 +65,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -96,
-        -48
+        -2080,
+        16
       ],
-      "id": "c03ac337-2d38-4bb7-86ea-f89f739f44d7",
+      "id": "4945f759-c2a7-49f9-955d-cde7e1b6d1ca",
       "name": "Edit Fields"
     },
     {
@@ -80,10 +80,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        -96,
-        -240
+        -2080,
+        -176
       ],
-      "id": "dfe6f00e-0204-4aab-84e4-96d208802219",
+      "id": "ee36e3f5-b4ad-4fbe-82b4-88a9d09ab84c",
       "name": "Respond to Webhook"
     },
     {
@@ -95,10 +95,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        320,
-        -48
+        -1664,
+        16
       ],
-      "id": "256b87db-968a-47c3-b92a-f3fd6d78b109",
+      "id": "f2af4b1e-a051-4980-855f-038f18251655",
       "name": "Respond to Webhook1"
     },
     {
@@ -111,17 +111,17 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -1984,
-        -144
+        -4176,
+        -80
       ],
-      "id": "6000fe1d-fc3a-40e4-af81-4026a530d24c",
+      "id": "c1d2b192-bd5c-4a96-bc66-140e5df9990b",
       "name": "Webhook",
       "webhookId": "7802664b-d69a-41d5-bdad-ffb08246eae6"
     },
     {
       "parameters": {
         "method": "PUT",
-        "url": "=http://192.168.1.128:8080/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
+        "url": "=http://192.168.1.128:8000/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n  \"additionalFee\": 0,\n  \"status\": \"STANDARD_SHIPPING\",\n  \"noteAppend\": \" | AI_TAG: NORMAL\"\n}",
@@ -136,16 +136,16 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -480,
-        -144
+        -2464,
+        -80
       ],
-      "id": "d0b44a0e-1b1b-4c48-9a11-673eb65a811a",
+      "id": "0d1e21ec-cccf-4eb6-9439-a0ec822f37f7",
       "name": "HTTP Request1"
     },
     {
       "parameters": {
         "method": "PUT",
-        "url": "=http://192.168.1.128:8080/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
+        "url": "=http://192.168.1.128:8000/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n  \"additionalFee\": 0,\n  \"status\": \"STANDARD_SHIPPING\",\n  \"noteAppend\": \" | AI_TAG: NORMAL\"\n}",
@@ -154,24 +154,24 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        112,
-        -48
+        -1872,
+        16
       ],
-      "id": "2b82ec45-ea2c-4cba-b467-132c45352a6e",
+      "id": "4be8a434-c2ba-418b-a51f-f84ffa76c126",
       "name": "HTTP Request2"
     },
     {
       "parameters": {
-        "url": "http://192.168.1.128:8080/api/orders/latest",
+        "url": "http://192.168.1.128:8000/api/orders/latest",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -1744,
-        -144
+        -3968,
+        -80
       ],
-      "id": "14541082-32cb-484e-b72e-cf6781879c2c",
+      "id": "17f414bf-53f1-4453-9445-00d016842695",
       "name": "Execute a SQL query2"
     },
     {
@@ -190,10 +190,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        -1248,
-        -128
+        -3232,
+        -64
       ],
-      "id": "56bd04e5-d27d-4c5c-804e-c0cf743fa25b",
+      "id": "b87ff317-f7da-45d2-875d-445b049d9ec4",
       "name": "Basic LLM Chain"
     },
     {
@@ -204,14 +204,14 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        -1232,
-        144
+        -3216,
+        208
       ],
-      "id": "a55acfb7-62dd-4aeb-b7b7-2df23736723c",
+      "id": "cfe36032-b0ad-4a67-b9dd-bef7997189f5",
       "name": "Groq Chat Model",
       "credentials": {
         "groqApi": {
-          "id": "150IMqCnJfBJt02h",
+          "id": "F0660oiHuE8wv0Cv",
           "name": "Groq account"
         }
       }
@@ -223,11 +223,29 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -784,
-        -128
+        -2768,
+        -64
       ],
-      "id": "8502e774-402f-446e-bdf4-b7a0907db8bd",
+      "id": "3d2ba41a-d45b-4632-910f-25534a02244d",
       "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://piliform-subventricous-jimmie.ngrok-free.dev/webhook/e99d1f26-3a52-49d9-93e5-ed402977fcb6",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"weight\": {{$json.body.weight}},\n  \"sender_address\": \"{{$json.body.sender_address}}\",\n  \"receiver_address\": \"{{$json.body.receiver_address}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -3712,
+        -80
+      ],
+      "id": "5bd269aa-0708-4c47-9554-a9780c97cad4",
+      "name": "HTTP Request3"
     }
   ],
   "pinData": {},
@@ -309,7 +327,7 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "HTTP Request3",
             "type": "main",
             "index": 0
           }
@@ -348,19 +366,29 @@
           }
         ]
       ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
+    "binaryMode": "separate"
   },
-  "versionId": "94978692-234b-439a-b49a-40c2c5d8ebed",
+  "versionId": "5783b76f-51c5-4d96-8e62-7ba0ea58351c",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "6b96901c6a8f53cde4aeb9ec81d0d8f066cc30ec7281146839f9f5e0ff3f7af5"
+    "instanceId": "ccd245c7789a7fa6fbebf8f4ac02c10f5def7c00eea7d6fde7f7ca90e02f914e"
   },
-  "id": "KDcYZLHZJsSUDfH6",
+  "id": "5pYTzIgg8n25mozH",
   "tags": []
 }

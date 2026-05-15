@@ -260,7 +260,7 @@
     },
     {
       "parameters": {
-        "url": "http://192.168.114.44:8080/api/orders/status/AI_PROCESSED",
+        "url": "http://192.168.114.44:8000/api/orders/status/AI_PROCESSED",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -275,7 +275,7 @@
     {
       "parameters": {
         "method": "PUT",
-        "url": "=http://192.168.114.44:8080/api/orders/{{ $json.id }}/status",
+        "url": "=http://192.168.114.44:8000/api/orders/{{ $json.id }}/status",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n  \"status\": \"DELIVERING\"\n}",
@@ -299,7 +299,7 @@
     {
       "parameters": {
         "method": "PUT",
-        "url": "=http://192.168.114.44:8080/api/orders/{{ $json.id }}/assign-delivery",
+        "url": "=http://192.168.114.44:8000/api/orders/{{ $json.id }}/assign-delivery",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"status\": \"DELIVERING\",\n  \"shipper\": \"{{ $json.shipper }}\",\n  \"shippingFee\": {{ $json.shippingFee }}\n}",
@@ -322,7 +322,7 @@
     },
     {
       "parameters": {
-        "url": "http://192.168.114.44:8080/api/orders/stats",
+        "url": "http://192.168.114.44:8000/api/orders/stats",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",

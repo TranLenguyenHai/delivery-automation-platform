@@ -96,8 +96,82 @@
         </div>
     </div>
 
+    {{-- 1. FLOATING ACTION BAR (PREMIUM UI) --}}
+    <div id="bulk-action-bar" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-gray-900/95 backdrop-blur-md text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 transition-all duration-500 translate-y-32 opacity-0 border border-white/10">
+        <div class="flex items-center gap-3 pr-6 border-r border-white/20">
+            <div class="relative">
+                <span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white shadow-lg animate-pulse" id="selected-count">0</span>
+            </div>
+            <span class="text-sm font-medium text-gray-300">đơn hàng đã chọn</span>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <button id="bulk-btn-print" onclick="printOrders()" class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-all active:scale-95">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                In vận đơn
+            </button>
+            <button id="bulk-btn-handover" onclick="handoverOrders()" class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                Bàn giao ĐVVC
+            </button>
+        </div>
+
+        <button onclick="resetSelection()" class="ml-2 p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/5" title="Bỏ chọn tất cả">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+
     <script>
         let currentTabStatus = 'all';
+
+        // --- 1. QUẢN LÝ TRẠNG THÁI CHECKBOX ---
+        function updateActionBar() {
+            const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
+            const count = checkedBoxes.length;
+            const bar = document.getElementById('bulk-action-bar');
+            const countLabel = document.getElementById('selected-count');
+            
+            // Cập nhật số lượng
+            countLabel.textContent = count;
+
+            // Hiển thị/Ẩn thanh công cụ
+            if (count > 0) {
+                bar.classList.remove('translate-y-32', 'opacity-0');
+                bar.classList.add('translate-y-0', 'opacity-100');
+                
+                // Logic hiển thị nút theo Tab hiện tại
+                const btnPrint = document.getElementById('bulk-btn-print');
+                const btnHandover = document.getElementById('bulk-btn-handover');
+                
+                if (currentTabStatus === 'Chờ in đơn') {
+                    btnPrint.style.display = 'flex';
+                    btnHandover.style.display = 'none';
+                } else if (currentTabStatus === 'Chờ lấy hàng') {
+                    btnPrint.style.display = 'none';
+                    btnHandover.style.display = 'flex';
+                } else {
+                    // Ở tab "Tất cả": Hiện cả 2 nhưng ưu tiên In nếu có đơn cần in
+                    btnPrint.style.display = 'flex';
+                    btnHandover.style.display = 'flex';
+                }
+            } else {
+                bar.classList.add('translate-y-32', 'opacity-0');
+                bar.classList.remove('translate-y-0', 'opacity-100');
+            }
+        }
+
+        function resetSelection() {
+            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('check-all').checked = false;
+            updateActionBar();
+        }
+
+        // Đăng ký sự kiện cho checkbox
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('order-checkbox') || e.target.id === 'check-all') {
+                updateActionBar();
+            }
+        });
 
         function showToast(message) {
             const toast = document.getElementById('toast-success');
@@ -110,11 +184,14 @@
             }, 3000);
         }
 
-        // --- 1. LOGIC ẨN HIỆN THEO TAB ---
+        // --- 2. LOGIC CHUYỂN TAB & FIX STATE LEAKAGE ---
         function filterOrders(statusFilter, clickedBtn) {
             currentTabStatus = statusFilter;
 
-            // Xử lý active trạng thái cho Tab
+            // BẮT BUỘC: Reset trạng thái khi chuyển tab (Fix Bug 3)
+            resetSelection();
+
+            // Cập nhật UI Tab
             const tabs = document.querySelectorAll('.tab-btn');
             tabs.forEach(tab => {
                 tab.classList.remove('text-blue-600', 'border-blue-600', 'font-semibold', 'active-tab');
@@ -123,36 +200,14 @@
             clickedBtn.classList.remove('text-gray-500', 'border-transparent', 'font-medium');
             clickedBtn.classList.add('text-blue-600', 'border-blue-600', 'font-semibold', 'active-tab');
 
-            // Logic ẩn/hiện nút bấm thao tác góc trên
-            const btnPrint = document.getElementById('btn-print');
-            const btnHandover = document.getElementById('btn-handover');
-
-            if (statusFilter === 'all') {
-                // Đang ở "Tất cả": Ẩn cả 2 nút
-                btnPrint.classList.add('hidden');
-                btnPrint.classList.remove('flex');
-                btnHandover.classList.add('hidden');
-                btnHandover.classList.remove('flex');
-            } else if (statusFilter === 'Chờ in đơn') {
-                // Đang ở "Chờ in": Hiện in, ẩn bàn giao
-                btnPrint.classList.remove('hidden');
-                btnPrint.classList.add('flex');
-                btnHandover.classList.add('hidden');
-                btnHandover.classList.remove('flex');
-            } else if (statusFilter === 'Chờ lấy hàng') {
-                // Đang ở "Chờ lấy": Ẩn in, hiện bàn giao
-                btnPrint.classList.add('hidden');
-                btnPrint.classList.remove('flex');
-                btnHandover.classList.remove('hidden');
-                btnHandover.classList.add('flex');
-            }
-
-            // Lọc dữ liệu trong bảng
+            // Lọc dữ liệu (Fix Bug 2)
             const rows = document.querySelectorAll('.order-row');
             let visibleCount = 0;
 
             rows.forEach(row => {
-                const rowStatus = row.getAttribute('data-status');
+                const rowStatus = row.getAttribute('data-status').trim();
+                // Logic lọc chính xác theo status hoặc hiển thị tất cả nếu là 'all'
+                // Bao gồm cả trạng thái "Đang thẩm định AI..." vào tab "Tất cả"
                 if (statusFilter === 'all' || rowStatus === statusFilter) {
                     row.style.display = '';
                     visibleCount++;
@@ -161,12 +216,12 @@
                 }
             });
 
-            // Xử lý Empty State
+            // Xử lý Trạng thái trống
             let emptyState = document.getElementById('empty-state-filter');
             if (visibleCount === 0 && rows.length > 0) {
                 if (!emptyState) {
                     document.getElementById('orders-table-body').insertAdjacentHTML('beforeend', `
-                        <tr id="empty-state-filter"><td colspan="6" class="px-6 py-16 text-center text-gray-500"><p class="text-base font-semibold text-gray-700">Trống</p></td></tr>
+                        <tr id="empty-state-filter"><td colspan="6" class="px-6 py-16 text-center text-gray-500"><p class="text-base font-semibold text-gray-700">Không tìm thấy đơn hàng nào trong mục này</p></td></tr>
                     `);
                 }
             } else if (emptyState) {
@@ -174,10 +229,10 @@
             }
         }
 
-        // --- 2. LOGIC NÚT IN ĐƠN ---
+        // --- 3. XỬ LÝ HÀNH ĐỘNG HÀNG LOẠT ---
         function printOrders() {
             const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
-            if (checkedBoxes.length === 0) return alert('Vui lòng tick chọn đơn hàng cần In!');
+            if (checkedBoxes.length === 0) return;
 
             const orderIds = Array.from(checkedBoxes).map(box => box.value);
 
@@ -202,16 +257,15 @@
                         badge.classList.replace('border-yellow-200', 'border-blue-200');
                         box.checked = false;
                     });
+                    showToast(`Đã in thành công ${orderIds.length} đơn hàng.`);
                     filterOrders(currentTabStatus, document.querySelector('.active-tab'));
-                    showToast(`Đã in thành công ${orderIds.length} đơn hàng. Đã chuyển sang Chờ lấy hàng.`);
                 }
             });
         }
 
-        // --- 3. LOGIC NÚT BÀN GIAO ĐVVC ---
         function handoverOrders() {
             const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
-            if (checkedBoxes.length === 0) return alert('Vui lòng tick chọn đơn hàng để Bàn giao!');
+            if (checkedBoxes.length === 0) return;
 
             const orderIds = Array.from(checkedBoxes).map(box => box.value);
 
@@ -228,17 +282,17 @@
                 if (data.success) {
                     checkedBoxes.forEach(box => {
                         const row = box.closest('tr');
-                        row.style.opacity = '0';
+                        row.classList.add('scale-95', 'opacity-0');
                         setTimeout(() => row.remove(), 300);
                     });
-                    showToast(`Đã bàn giao ${orderIds.length} đơn hàng. Đã đẩy sang trang Trạng thái.`);
+                    showToast(`Đã bàn giao ${orderIds.length} đơn hàng.`);
+                    setTimeout(() => updateActionBar(), 400);
                 }
             });
         }
 
-        // --- 4. LOGIC HỦY ĐƠN HÀNG (THÙNG RÁC) ---
         function cancelOrder(id) {
-            if (confirm('Sếp muốn HỦY đơn hàng này? Đơn sẽ được chuyển vào mục Lịch sử (Đã hủy).')) {
+            if (confirm('Sếp muốn HỦY đơn hàng này?')) {
                 fetch('{{ route("orders.cancel") }}', {
                     method: 'POST',
                     headers: {
@@ -250,29 +304,31 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showToast('Đã chuyển đơn hàng sang trạng thái Đã hủy!');
-                        // Xóa luôn dòng đó khỏi màn hình cho gọn mắt
-                        const row = document.querySelector(`input[value="${id}"]`).closest('tr');
-                        row.style.opacity = '0';
-                        setTimeout(() => row.remove(), 300);
-                    } else {
-                        alert('Lỗi: Không thể hủy đơn hàng!');
+                        showToast('Đã hủy đơn hàng thành công!');
+                        const checkbox = document.querySelector(`.order-checkbox[value="${id}"]`);
+                        if (checkbox) {
+                            const row = checkbox.closest('tr');
+                            row.classList.add('scale-95', 'opacity-0');
+                            setTimeout(() => {
+                                row.remove();
+                                updateActionBar();
+                            }, 300);
+                        }
                     }
-                })
-                .catch(err => {
-                    alert('Có lỗi xảy ra, vui lòng thử lại.');
                 });
             }
         }
 
-        // Tiện ích: Tick chọn tất cả
+        // Select All Tool
         document.getElementById('check-all').addEventListener('change', function() {
             const isChecked = this.checked;
             document.querySelectorAll('.order-checkbox').forEach(box => {
-                if(box.closest('tr').style.display !== 'none') {
+                const row = box.closest('tr');
+                if(row.style.display !== 'none') {
                     box.checked = isChecked;
                 }
             });
+            updateActionBar();
         });
     </script>
 <script>

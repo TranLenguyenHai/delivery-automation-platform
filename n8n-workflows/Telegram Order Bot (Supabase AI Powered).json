@@ -1,0 +1,220 @@
+{
+  "name": "Telegram Order Bot (Supabase AI Powered)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bb6ea455-5703-4076-893f-9a56b4990277",
+      "name": "Telegram Trigger",
+      "webhookId": "627dd940-97f9-472c-b88b-93f953d7520a",
+      "credentials": {
+        "telegramApi": {
+          "id": "ys2NMM8UJjpNMPX7",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Nhiệm vụ: Phân tích tin nhắn đặt hàng giao hàng và xuất ra duy nhất một đối tượng JSON.\n\nQUY TẮC PHÂN LOẠI NGƯỜI GỬI (SENDER) VÀ NGƯỜI NHẬN (RECEIVER):\n- Case 1 (Khách mua hàng từ shop, không có cấu trúc 'từ A tới B'): BẮT BUỘC gán SENDER mặc định là: sender_name='Kho tổng VKU', sender_address='470 Trần Đại Nghĩa, Phường Hoà Quý, Quận Ngũ Hành Sơn, TP. Đà Nẵng', sender_phone='0962400058'. RECEIVER là thông tin khách hàng nhắn tin mua.\n- Case 2 (Khách nhờ giao hộ, có cấu trúc 'từ A tới/đến B'): SENDER là toàn bộ thông tin (tên, sđt, địa chỉ) của người ở điểm đi A. RECEIVER là toàn bộ thông tin (tên, sđt, địa chỉ) của người ở điểm đến B.\n\nQUY TẮC TRÍCH XUẤT:\n- product_name: Tên món hàng sạch sẽ (không dính trọng lượng hay từ thừa).\n- weight: Trọng lượng quy đổi hoàn toàn ra con số nguyên theo đơn vị gram (ví dụ: 300gam -> 300, 1kg -> 1000).\n- note: Chỉ lấy các yêu cầu dặn dò thêm (bọc chống sốc, test kỹ). KHÔNG lấy tin nhắn gốc.\n- Trích xuất đầy đủ, không được để rỗng: sender_name, sender_phone, sender_address, receiver_name, receiver_phone, receiver_address.\n\nĐỊNH DẠNG ĐẦU RA (JSON ONLY):\n{\n  \"product_name\": \"string\",\n  \"weight\": number,\n  \"note\": \"string\",\n  \"sender_name\": \"string\",\n  \"sender_address\": \"string\",\n  \"sender_phone\": \"string\",\n  \"receiver_name\": \"string\",\n  \"receiver_address\": \"string\",\n  \"receiver_phone\": \"string\",\n  \"status\": \"Chờ điều phối\"\n}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        256,
+        0
+      ],
+      "id": "0dbf4bda-7908-4d43-956c-9b5b999df561",
+      "name": "AI Parser (LLM)"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        208,
+        208
+      ],
+      "id": "f7d480b2-7256-4141-b57d-2ac43edd9da7",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "F0660oiHuE8wv0Cv",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawText = $json.text;\nlet jsonMatch = rawText.match(/\\{[\\s\\S]*\\}/);\nif (jsonMatch) {\n    rawText = jsonMatch[0];\n}\nreturn JSON.parse(rawText);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "ea804470-2ce8-4190-9d6c-d38ffcbdd1e2",
+      "name": "Parse AI JSON"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list"
+        },
+        "table": {
+          "__rl": true,
+          "value": "orders",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sender_name": "={{ $json.sender_name }}",
+            "sender_phone": "={{ $json.sender_phone }}",
+            "sender_address": "={{ $json.sender_address }}",
+            "receiver_name": "={{ $json.receiver_name }}",
+            "receiver_phone": "={{ $json.receiver_phone }}",
+            "receiver_address": "={{ $json.receiver_address }}",
+            "product_name": "={{ $json.product_name }}",
+            "weight": "={{ $json.weight }}",
+            "note": "={{ $json.note }}",
+            "status": "={{ $json.status }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        752,
+        0
+      ],
+      "id": "dfc4702e-0de0-452d-bd87-16c43a75605f",
+      "name": "Supabase Insert",
+      "credentials": {
+        "postgres": {
+          "id": "okuUcbmnXne2PAil",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Tuyệt vời! Đơn hàng {{ $json.product_name }} gửi đến {{ $json.receiver_address }} (SĐT: {{ $json.receiver_phone }}) đã được lên đơn thành công.",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1008,
+        0
+      ],
+      "id": "012c8b9e-cfc7-4683-8d1a-1b6cdbdb4248",
+      "name": "Telegram Confirm",
+      "webhookId": "12039952-1087-479f-bb8b-fa34baefad8c",
+      "credentials": {
+        "telegramApi": {
+          "id": "ys2NMM8UJjpNMPX7",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Parser (LLM)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Parser (LLM)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Parser (LLM)": {
+      "main": [
+        [
+          {
+            "node": "Parse AI JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI JSON": {
+      "main": [
+        [
+          {
+            "node": "Supabase Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Insert": {
+      "main": [
+        [
+          {
+            "node": "Telegram Confirm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a3e01a0f-77cf-4003-b5dc-df81a4c82b2f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ccd245c7789a7fa6fbebf8f4ac02c10f5def7c00eea7d6fde7f7ca90e02f914e"
+  },
+  "id": "vJnBp21dXpjkaEwd",
+  "tags": []
+}

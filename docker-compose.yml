@@ -6,15 +6,15 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - WEBHOOK_URL=https://c78448b64e7062.lhr.life
+      - WEBHOOK_URL=https://piliform-subventricous-jimmie.ngrok-free.dev
+      - N8N_ENFORCEMENT_SSL=true
+      - N8N_PROTOCOL=http
+      - N8N_HOST=piliform-subventricous-jimmie.ngrok-free.dev
       - N8N_PORT=5678
       - N8N_CORS_ALLOWED_ORIGINS=*
       - N8N_RESPONSE_MODE=responseNode
     volumes:
-      - n8n_data:/home/node/.n8n
+      - ./n8n_data:/home/node/.n8n
     dns:
       - 8.8.8.8
       - 8.8.4.4
-
-volumes:
-  n8n_data:

@@ -2,10 +2,10 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route; // THÊM DÒNG NÀY ĐỂ KHÔNG LỖI ROUTE
+use Illuminate\Support\Facades\Route; 
 
-// API NÀY N8N GỌI ĐỂ TẠO ĐƠN TỪ TELEGRAM
-Route::post('/api/orders', function (Request $request) {
+// 1. API N8N GỌI ĐỂ TẠO ĐƠN TỪ TELEGRAM
+Route::post('/orders', function (Request $request) {
     $data = $request->all();
     try {
         DB::table('orders')->insert([
@@ -28,18 +28,16 @@ Route::post('/api/orders', function (Request $request) {
     }
 });
 
-// CỔNG NÀY N8N GỌI LẠI SAU KHI AI THẨM ĐỊNH XONG
-Route::put('/api/orders/{id}/ai-update', function (Request $request, $id) {
-    // Lấy dữ liệu từ node "HTTP Request" của n8n bắn sang
+// 2. CỔNG NÀY N8N GỌI LẠI SAU KHI AI THẨM ĐỊNH XONG (Đã sửa COALESCE)
+Route::put('/orders/{id}/ai-update', function (Request $request, $id) {
     $additionalFee = (int) $request->input('additionalFee', 0);
     $noteAppend = $request->input('noteAppend', '');
 
-    // N8n gửi status là "STANDARD_SHIPPING", nhưng web mình cần "Chờ in đơn" để nó nằm ở kho
     try {
         DB::table('orders')->where('id', $id)->update([
-            'status' => 'Chờ in đơn', // Ép về kho luôn
-            'shipping_fee' => DB::raw("IFNULL(shipping_fee, 0) + $additionalFee"), // Cộng dồn phụ phí AI tính
-            'note' => DB::raw("CONCAT(IFNULL(note, ''), '$noteAppend')") // Gắn thêm cái AI_TAG
+            'status' => 'Chờ in đơn', 
+            'shipping_fee' => DB::raw("COALESCE(shipping_fee, 0) + $additionalFee"), 
+            'note' => DB::raw("CONCAT(COALESCE(note, ''), '$noteAppend')") 
         ]);
 
         return response()->json(['status' => 'success', 'message' => 'AI đã cập nhật đơn hàng!']);
@@ -48,43 +46,28 @@ Route::put('/api/orders/{id}/ai-update', function (Request $request, $id) {
     }
 });
 
-
-// =========================================================================
-// CÁC CỔNG API CHO N8N TỰ ĐỘNG ĐIỀU PHỐI (BACKGROUND CRON JOBS)
-// =========================================================================
-
-// 1. CỔNG CHO N8N QUÉT ĐƠN HÀNG MỖI PHÚT (Schedule Trigger)
-// N8n sẽ gọi vào: /api/orders/status/AI_PROCESSED
-Route::get('/api/orders/status/{status}', function ($status) {
-    // Map trạng thái tiếng Anh của n8n sang tiếng Việt của Web
+// 3. CỔNG CHO N8N QUÉT ĐƠN HÀNG (Schedule Trigger)
+Route::get('/orders/status/{status}', function ($status) {
     $dbStatus = $status;
     if ($status === 'AI_PROCESSED') {
-        $dbStatus = 'Chờ lấy hàng'; // Quét các đơn đã in xong nhưng chưa bàn giao
+        $dbStatus = 'Chờ lấy hàng';
     }
-
     $orders = DB::table('orders')->where('status', $dbStatus)->get();
-
-    // N8n cần trả về mảng JSON
     return response()->json($orders);
 });
 
-
-// 2. CỔNG CHO N8N TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI (VD: Sang Đang giao hàng)
-Route::put('/api/orders/{id}/status', function (Request $request, $id) {
+// 4. CỔNG CHO N8N TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI
+Route::put('/orders/{id}/status', function (Request $request, $id) {
     $status = $request->input('status');
-
-    // Map tiếng Anh sang tiếng Việt
     if ($status === 'DELIVERING') $status = 'Đang giao hàng';
     if ($status === 'CANCELLED') $status = 'Giao thất bại';
 
     DB::table('orders')->where('id', $id)->update(['status' => $status]);
-
     return response()->json(['success' => true]);
 });
 
-
-// 3. CỔNG CHO N8N TỰ ĐỘNG GÁN ĐVVC VÀ ĐẨY ĐI GIAO
-Route::put('/api/orders/{id}/assign-delivery', function (Request $request, $id) {
+// 5. CỔNG CHO N8N TỰ ĐỘNG GÁN ĐVVC (Đã sửa COALESCE)
+Route::put('/orders/{id}/assign-delivery', function (Request $request, $id) {
     $status = $request->input('status') === 'DELIVERING' ? 'Đang giao hàng' : $request->input('status');
     $shipper = $request->input('shipper');
     $shippingFee = (int) $request->input('shippingFee', 0);
@@ -92,23 +75,36 @@ Route::put('/api/orders/{id}/assign-delivery', function (Request $request, $id) 
     DB::table('orders')->where('id', $id)->update([
         'status' => $status,
         'shipper' => $shipper,
-        'shipping_fee' => DB::raw("IFNULL(shipping_fee, 0) + $shippingFee"),
-        'note' => DB::raw("CONCAT(IFNULL(note, ''), ' | Auto-Assigned: $shipper')") // Note lại để biết hệ thống tự gán
+        'shipping_fee' => DB::raw("COALESCE(shipping_fee, 0) + $shippingFee"),
+        'note' => DB::raw("CONCAT(COALESCE(note, ''), ' | Auto-Assigned: $shipper')") 
     ]);
-
     return response()->json(['success' => true]);
 });
 
-
-// 4. CỔNG CHO LÚC 23:00 N8N VÀO LẤY BÁO CÁO DOANH THU GỬI MAIL SẾP THÁI
-Route::get('/api/orders/stats', function () {
-    // Lấy tổng đơn và tổng doanh thu
+// 6. CỔNG LẤY BÁO CÁO DOANH THU
+Route::get('/orders/stats', function () {
     $totalOrders = DB::table('orders')->count();
     $totalRevenue = DB::table('orders')->sum('shipping_fee');
-
-    // N8n dang chờ cục JSON có trường 'tong_don' và 'tong_tien'
     return response()->json([
         'tong_don' => $totalOrders,
         'tong_tien' => number_format($totalRevenue, 0, ',', '.')
+    ]);
+});
+
+// 7. CỔNG LẤY ĐƠN HÀNG MỚI NHẤT (ĐÃ VÁ ĐỦ TRƯỜNG CHO N8N)
+Route::get('/orders/latest', function () {
+    $order = DB::table('orders')->orderBy('id', 'desc')->first();
+
+    if (!$order) {
+        return response()->json(['status' => 'error', 'message' => 'Không tìm thấy đơn hàng nào!'], 404);
+    }
+
+    return response()->json([
+        'weight'           => $order->weight,
+        'sender_address'   => $order->sender_address ?? 'Đà Nẵng', 
+        'receiver_address' => $order->receiver_address ?? $order->address,
+        'receiverName'     => $order->receiver_name ?? 'Khách',
+        'receiverPhone'    => $order->receiver_phone ?? '0912345678',
+        'distanceKm'       => 17.0 // Mock quãng đường chuẩn cho n8n tính tiền
     ]);
 });
