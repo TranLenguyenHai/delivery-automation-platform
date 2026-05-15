@@ -2,17 +2,50 @@ document.addEventListener("DOMContentLoaded", function() {
     const chatbot = document.getElementById('ai-chatbot-container');
     const chatInput = document.getElementById('chat-input');
     const chatMessages = document.getElementById('chatbot-messages');
+    const btnOpen = document.getElementById('btn-open-chatbot');
+    const btnClose = document.getElementById('close-chatbot');
 
-    // 1. LẤY DATA GỐC VÀ TỰ ĐỘNG PHÂN LOẠI
+    // 1. KHÔI PHỤC TRẠNG THÁI & LỊCH SỬ CHAT
+    const savedOpen = sessionStorage.getItem('chatbotOpen');
+    if (savedOpen === 'true') {
+        chatbot.classList.remove('chatbot-hidden');
+    }
+
+    const savedHistory = sessionStorage.getItem('chatHistory');
+    if (savedHistory) {
+        chatMessages.innerHTML = savedHistory;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    } else {
+        // Lời chào mặc định nếu lần đầu mở
+        setTimeout(() => {
+            if (chatMessages.innerHTML.trim() === "") {
+                appendMsg('ai', "Chào sếp Thái! Em là trợ lý Logistics VKU. Sếp dặn gì em nghe ạ! 🫡");
+            }
+        }, 1000);
+    }
+
+    function saveChat() {
+        sessionStorage.setItem('chatHistory', chatMessages.innerHTML);
+    }
+
+    // 2. LẤY DATA GỐC VÀ TỰ ĐỘNG PHÂN LOẠI
     const orders = window.phpOrders || [];
     let donChuaXuLy = orders.filter(o => ['Chờ điều phối', 'Chờ in đơn', 'Chờ lấy hàng', 'Đang thẩm định AI...'].includes(o.status));
     let donDaXuLy = orders.filter(o => ['Đang giao hàng', 'Giao thành công', 'Giao thất bại'].includes(o.status));
 
     // --- LOGIC MỞ/ĐÓNG CHAT ---
-    const btnOpen = document.getElementById('btn-open-chatbot');
-    const btnClose = document.getElementById('close-chatbot');
-    if(btnOpen) btnOpen.addEventListener('click', () => chatbot.classList.remove('chatbot-hidden'));
-    if(btnClose) btnClose.addEventListener('click', () => chatbot.classList.add('chatbot-hidden'));
+    if(btnOpen) {
+        btnOpen.addEventListener('click', () => {
+            chatbot.classList.remove('chatbot-hidden');
+            sessionStorage.setItem('chatbotOpen', 'true');
+        });
+    }
+    if(btnClose) {
+        btnClose.addEventListener('click', () => {
+            chatbot.classList.add('chatbot-hidden');
+            sessionStorage.setItem('chatbotOpen', 'false');
+        });
+    }
 
     function appendMsg(sender, text) {
         const msgHtml = `
@@ -20,23 +53,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 <span class="badge ${sender === 'ai' ? 'bg-primary' : 'bg-secondary'}">
                     ${sender === 'ai' ? '🤖 THƯ KÝ AI' : '👤 SẾP THÁI'}
                 </span>
-                <div class="p-2 ${sender === 'ai' ? 'bg-white border-start border-primary border-4' : 'bg-primary text-white'} rounded mt-1 shadow-sm">
+                <div class="p-2 rounded mt-1 shadow-sm" style="${sender === 'ai' ? 'background: #1e293b; color: #38bdf8; border-left: 4px solid #3b82f6;' : 'background: #334155; color: #fbbf24;'}">
                     ${text}
                 </div>
             </div>`;
 
-        // 🔴 CHỖ SỬA QUAN TRỌNG: Dùng insertAdjacentHTML thay vì innerHTML +=
         chatMessages.insertAdjacentHTML('beforeend', msgHtml);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        saveChat(); // Lưu lại ngay
     }
 
     async function aiThinking(seconds = 0.6) {
         const thinkingId = 'thinking-' + Date.now();
         const thinkingHtml = `<div id="${thinkingId}" class="text-muted small mb-2"><i>Thư ký đang dò sổ sách...</i></div>`;
-
-        // 🔴 Sửa luôn ở đây cho chắc cốp
         chatMessages.insertAdjacentHTML('beforeend', thinkingHtml);
-
         await new Promise(r => setTimeout(r, seconds * 1000));
         const el = document.getElementById(thinkingId);
         if(el) el.remove();
@@ -49,19 +79,20 @@ document.addEventListener("DOMContentLoaded", function() {
         "Dạ em đây sếp! Sếp cần báo cáo Tổng quan hay muốn Tối ưu tuyến đường luôn ạ?"
     ];
 
-    // --- BỘ NÃO XỬ LÝ CHAT TỔNG HỢP ---
+    // --- BỘ NÃO XỬ LÝ CHAT TỔNG HỢP (GIỮ NGUYÊN LOGIC SẾP) ---
     window.processUserChat = async function() {
         const rawMsg = chatInput.value.toLowerCase().trim();
         if (!rawMsg) return;
 
-        appendMsg('user', chatInput.value);
+        const originalMsg = chatInput.value;
         chatInput.value = '';
+        appendMsg('user', originalMsg);
         await aiThinking(0.5);
 
         const numberMatch = rawMsg.match(/\d+/);
         let count = numberMatch ? parseInt(numberMatch[0]) : null;
 
-        // KỊCH BẢN 1: BÁO CÁO SỐ LƯỢNG (PHÂN LUỒNG)
+        // KỊCH BẢN 1: BÁO CÁO SỐ LƯỢNG
         if (rawMsg.includes("bao nhiêu") || rawMsg.includes("check") || rawMsg.includes("tình hình") || rawMsg.includes("tổng")) {
             if (rawMsg.includes("chưa")) {
                 appendMsg('ai', `Báo cáo sếp Thai, mình đang tồn <b>${donChuaXuLy.length} đơn CHƯA XỬ LÝ</b> ạ. Sếp muốn bốc lên xe luôn không?`);
@@ -80,24 +111,19 @@ document.addEventListener("DOMContentLoaded", function() {
 
             if (finalCount === 0) {
                 appendMsg('ai', `Dạ sếp, hiện không có đơn nào ở trạng thái ${statusText} ạ.`);
-                return;
+            } else {
+                let listMsg = `Dạ sếp, em gửi danh sách <b>${finalCount} đơn ${statusText}</b>:<br><hr>`;
+                targetArray.slice(0, finalCount).forEach((o, i) => {
+                    listMsg += `<div class="mb-2 p-2 border-bottom"><b>${i+1}. 📦 #${o.id}</b> - ${o.product_name}<br>📍 Tới: ${o.receiver_address || '...'}</div>`;
+                });
+                appendMsg('ai', listMsg + "<br>Sếp ngó qua nhé, chốt đơn nào thì bảo em <b>Tối ưu</b>!");
             }
-
-            let listMsg = `Dạ sếp, em gửi danh sách <b>${finalCount} đơn ${statusText}</b>:<br><hr>`;
-            targetArray.slice(0, finalCount).forEach((o, i) => {
-                listMsg += `<div class="mb-2 p-2 border-bottom"><b>${i+1}. 📦 #${o.id}</b> - ${o.product_name}<br>📍 Tới: ${o.receiver_address || '...'}</div>`;
-            });
-            appendMsg('ai', listMsg + "<br>Sếp ngó qua nhé, chốt đơn nào thì bảo em <b>Tối ưu</b>!");
         }
 
-        // KỊCH BẢN 3: ĐIỀU XE TỐI ƯU (DÙNG ĐƠN ĐÃ XỬ LÝ NHƯ SẾP YÊU CẦU)
+        // KỊCH BẢN 3: ĐIỀU XE TỐI ƯU
         else if (rawMsg.includes("tối ưu") || rawMsg.includes("chốt") || rawMsg.includes("điều xe")) {
             let num = count;
-            let isRecent = rawMsg.includes("gần nhất") || rawMsg.includes("mới nhất");
-
-            // --- CHỖ SỬA: Lấy từ mảng 'orders' (tất cả) để không sót đơn mới tạo ---
             let pool = [...orders];
-
             if (rawMsg.includes("hết") || rawMsg.includes("tất cả")) num = pool.length;
 
             if (pool.length === 0) {
@@ -110,151 +136,191 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            // Sắp xếp đơn hàng: ID lớn nhất (mới nhất) lên đầu
-            pool.sort((a, b) => {
-                const idA = parseInt(a.id.toString().replace(/\D/g, ''));
-                const idB = parseInt(b.id.toString().replace(/\D/g, ''));
-                return idB - idA;
-            });
-
-            let textResponse = isRecent
-                ? `🚀 <b>Rõ!</b> Em bốc <b>${num} đơn vừa mới tạo nhất</b> sang trạm AI n8n.`
-                : `🚀 <b>Rõ!</b> Em đang gửi <b>${num} đơn</b> sang trạm AI n8n.`;
-
-            appendMsg('ai', `${textResponse} Sếp chờ em vẽ radar nhé!`);
+            appendMsg('ai', `🚀 <b>Rõ!</b> Em đang gửi <b>${num} đơn</b> sang trạm AI n8n. Sếp chờ em vẽ radar nhé!`);
             await aiThinking(2);
 
             try {
-                // Lấy N đơn hàng từ đầu danh sách đã sắp xếp (luôn là đơn mới nhất)
                 const selectedOrders = pool.slice(0, num);
-
-                const payloadOrders = selectedOrders.map(order => ({
-                    ...order,
-                    // Ưu tiên tọa độ thật từ Database sếp vừa thêm, nếu không có mới dùng rand
-                    lat: order.receiver_lat ? parseFloat(order.receiver_lat) : parseFloat((16.05 + Math.random() * 0.05).toFixed(4)),
-                    lng: order.receiver_lng ? parseFloat(order.receiver_lng) : parseFloat((108.20 + Math.random() * 0.05).toFixed(4)),
-                    s_lat: order.sender_lat ? parseFloat(order.sender_lat) : 16.03,
-                    s_lng: order.sender_lng ? parseFloat(order.sender_lng) : 108.18
-                }));
-
-                const response = await fetch('http://localhost:5678/webhook-test/toi-uu-logistics', {
+                const response = await fetch('http://localhost:5678/webhook/toi-uu-logistics', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orders: payloadOrders })
+                    body: JSON.stringify({ orders: selectedOrders })
                 });
 
                 const result = await response.json();
                 const aiData = result[0]?.json || result;
-
                 if(window.renderChatbotData) window.renderChatbotData(aiData);
-
-                let weatherS = aiData.isRaining
-                    ? `<div class="alert alert-info mt-2">🌧️ Đà Nẵng đang mưa, em đã tự cộng phụ phí cho sếp!</div>`
-                    : `<div class="alert alert-success mt-2">☀️ Trời đẹp, shipper VKU có thể tăng tốc!</div>`;
-
-                appendMsg('ai', `${aiData.chatbot_message}${weatherS}`);
+                appendMsg('ai', aiData.chatbot_message || "Đã vẽ lộ trình tối ưu cho sếp!");
             } catch (e) {
-                appendMsg('ai', "❌ Lỗi kết nối n8n. Sếp check lại container n8n (cổng 5678) nhé!");
+                appendMsg('ai', "❌ Lỗi kết nối n8n. Sếp check lại container n8n nhé!");
             }
         }
 
-        // KỊCH BẢN 4: EASTER EGGS (VỪA KHÔI PHỤC)
+        // KỊCH BẢN 4: EASTER EGGS
         else if (rawMsg.includes("tác giả") || rawMsg.includes("thái") || rawMsg.includes("lê")) {
             appendMsg('ai', "Dạ, em là trợ lý độc quyền được lập trình bởi sếp <b>Thái (Lê)</b> - Trùm cuối Logistics ạ!");
-        }
-        else if (rawMsg.includes("cô cẩm")) {
+        } else if (rawMsg.includes("cô cẩm")) {
             appendMsg('ai', "Em xin kính chào cô ạ! Hệ thống đang chạy rất mượt nhờ sự hướng dẫn của cô đấy ạ!");
         }
 
-        // KỊCH BẢN 5: KHÔNG HIỂU -> HỎI LẠI NGẪU NHIÊN
+        // KỊCH BẢN 5: KHÔNG HIỂU
         else {
             const randomQuestion = secretarialQuestions[Math.floor(Math.random() * secretarialQuestions.length)];
             appendMsg('ai', randomQuestion);
         }
+        
+        saveChat(); // Lưu lại sau khi AI trả lời
     };
 
     chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") processUserChat(); });
 });
 
-// =========================================
-// HÀM VẼ RADAR (GIỮ NGUYÊN)
-// =========================================
+// ============================================================
+// HÀM VẼ BẢN ĐỒ RADAR - ĐÃ VIẾT LẠI HOÀN TOÀN
+// ============================================================
 window.renderChatbotData = function(aiData) {
+    const mapData = aiData.map_data;
+    if (!mapData) return;
+
+    const trips = mapData.trips || [];
+    const depot = mapData.depot || { x: 50, y: 50 };
+
+    // --- Thu thập tất cả các điểm giao hàng từ mọi chuyến ---
+    let allPoints = []; // { x, y, label, color, tripIdx }
+    trips.forEach((trip, ti) => {
+        (trip.route || []).forEach(pt => {
+            allPoints.push({
+                x: pt.x, y: pt.y,
+                label: pt.step || (pt.id ? String(pt.id).slice(-3) : '?'),
+                color: trip.color || '#3b82f6',
+                tripIdx: ti,
+                step: pt.step
+            });
+        });
+    });
+
+    // --- Nếu KHÔNG có tọa độ thực, tạo bố cục vòng tròn ---
+    const MAP_W = 280, MAP_H = 220;
+    const DEPOT_X = MAP_W / 2, DEPOT_Y = MAP_H / 2;
+    const needsLayout = allPoints.every(p => !p.x && !p.y);
+
+    if (needsLayout) {
+        const total = allPoints.length;
+        const radius = Math.min(MAP_W, MAP_H) * 0.36;
+        allPoints.forEach((pt, i) => {
+            // Trải đều theo vòng tròn, bắt đầu từ góc trên (270 độ)
+            const angle = (270 + (360 / total) * i) * (Math.PI / 180);
+            pt.x = Math.round(DEPOT_X + radius * Math.cos(angle));
+            pt.y = Math.round(DEPOT_Y + radius * Math.sin(angle));
+        });
+    } else {
+        // Có tọa độ thực (0-500 range) → scale về MAP_W x MAP_H
+        const xs = allPoints.map(p => p.x).filter(Boolean);
+        const ys = allPoints.map(p => p.y).filter(Boolean);
+        const minX = Math.min(...xs, depot.x || 250);
+        const maxX = Math.max(...xs, depot.x || 250);
+        const minY = Math.min(...ys, depot.y || 250);
+        const maxY = Math.max(...ys, depot.y || 250);
+        const padX = (maxX - minX) || 1;
+        const padY = (maxY - minY) || 1;
+        const scale = (v, min, pad, out) => Math.round(20 + ((v - min) / pad) * (out - 40));
+        allPoints.forEach(pt => {
+            pt.x = scale(pt.x, minX, padX, MAP_W);
+            pt.y = scale(pt.y, minY, padY, MAP_H);
+        });
+        depot.x = scale(depot.x || 250, minX, padX, MAP_W);
+        depot.y = scale(depot.y || 250, minY, padY, MAP_H);
+    }
+
+    // --- Nhóm lại điểm theo từng chuyến để vẽ đường ---
+    let tripRoutes = trips.map((trip, ti) => {
+        const pts = allPoints.filter(p => p.tripIdx === ti).sort((a, b) => a.step - b.step);
+        return { color: trip.color || '#3b82f6', name: trip.name, pts };
+    });
+
+    // --- Xây HTML bản đồ ---
+    const depX = needsLayout ? DEPOT_X : (depot.x || DEPOT_X);
+    const depY = needsLayout ? DEPOT_Y : (depot.y || DEPOT_Y);
+
+    // Tạo SVG path cho từng chuyến: KHO → điểm1 → điểm2 → ... → KHO
+    let svgLines = '';
+    tripRoutes.forEach(tr => {
+        if (tr.pts.length === 0) return;
+        const pathPts = [[depX, depY], ...tr.pts.map(p => [p.x, p.y]), [depX, depY]];
+        const d = pathPts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
+        svgLines += `<path d="${d}" stroke="${tr.color}" stroke-width="1.5" stroke-dasharray="4 3" fill="none" opacity="0.7"/>`;
+    });
+
+    // Tạo HTML các node điểm giao
+    let nodesHtml = '';
+    allPoints.forEach(pt => {
+        nodesHtml += `
+            <div style="position:absolute; left:${pt.x}px; top:${pt.y}px; transform:translate(-50%,-50%); z-index:20; text-align:center;">
+                <div style="width:22px;height:22px;border-radius:50%;background:${pt.color};border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;color:#fff;box-shadow:0 0 6px ${pt.color}88;">${pt.label}</div>
+            </div>`;
+    });
+
     const mapHtml = `
-        <div class="mt-3 p-2 bg-slate-900 rounded-lg border border-slate-700">
-            <p class="text-[10px] text-blue-400 font-bold mb-2 uppercase tracking-widest">📡 Lộ trình tối ưu P2P (Shortest Path)</p>
-            <div class="mini-map-container" style="position: relative; width: 100%; height: 300px; background: #0f172a; overflow: hidden;">
-                <svg class="map-svg" style="position:absolute; width:100%; height:100%; pointer-events:none; z-index:10;"></svg>
-                <div class="shipper-dot" style="opacity:0; z-index:30; position:absolute; width:12px; height:12px; background:#00ffcc; border-radius:50%; transform:translate(-50%, -50%); box-shadow:0 0 10px #00ffcc;"></div>
-                <div class="map-node node-depot" style="z-index:25; position:absolute; transform:translate(-50%, -50%);">📍</div>
+        <div class="chatbot-map-wrap mt-3 p-2 rounded-lg" style="background:#0f172a; border:1px solid #1e3a5f;">
+            <p style="font-size:10px;color:#60a5fa;font-weight:bold;margin-bottom:6px;letter-spacing:1px;">📡 LỘ TRÌNH TỐI ƯU AI (${allPoints.length} điểm giao)</p>
+            <div class="mini-map-container" style="position:relative; width:${MAP_W}px; height:${MAP_H}px; background:#0a1628; overflow:hidden; border-radius:8px; border:1px solid #1e3a5f; margin:0 auto;">
+                <!-- SVG lines -->
+                <svg style="position:absolute;width:100%;height:100%;top:0;left:0;z-index:5;" viewBox="0 0 ${MAP_W} ${MAP_H}">
+                    ${svgLines}
+                </svg>
+                <!-- Shipper dot (animated) -->
+                <div class="chatbot-shipper-dot" style="opacity:0;position:absolute;left:${depX}px;top:${depY}px;width:14px;height:14px;background:#00ffcc;border-radius:50%;transform:translate(-50%,-50%);z-index:30;box-shadow:0 0 12px #00ffcc, 0 0 4px #fff;transition:left 0.6s ease, top 0.6s ease;"></div>
+                <!-- Depot node -->
+                <div style="position:absolute;left:${depX}px;top:${depY}px;transform:translate(-50%,-50%);z-index:25;font-size:16px;" title="KHO TỔNG">🏭</div>
+                <!-- Delivery nodes -->
+                ${nodesHtml}
             </div>
-            <button class="btn-run-animation w-full mt-2 py-1 bg-blue-600 text-white text-xs font-bold rounded hover:bg-blue-700 transition-all">
-                ▶ KHỞI CHẠY GIAO HÀNG
-            </button>
+            <!-- Legend -->
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+                ${tripRoutes.map(tr => `<span style="font-size:9px;color:${tr.color};background:${tr.color}22;padding:2px 6px;border-radius:10px;border:1px solid ${tr.color}55;">${tr.name}</span>`).join('')}
+            </div>
+            <button class="chatbot-run-btn" style="width:100%;margin-top:8px;padding:5px;background:#1d4ed8;color:#fff;font-size:11px;font-weight:bold;border:none;border-radius:6px;cursor:pointer;">▶ KHỞI CHẠY ANIMATION</button>
         </div>`;
 
     const aiMsgs = document.querySelectorAll('.msg-ai');
     const lastAiMsg = aiMsgs[aiMsgs.length - 1].querySelector('.p-2');
     lastAiMsg.insertAdjacentHTML('beforeend', mapHtml);
 
-    const currentMap = lastAiMsg.querySelector('.mt-3:last-child');
-    const mapBox = currentMap.querySelector('.mini-map-container');
-    const svg = currentMap.querySelector('.map-svg');
-    const shipper = currentMap.querySelector('.shipper-dot');
-    const btn = currentMap.querySelector('.btn-run-animation');
-    let fullRoute = [];
+    // --- Gắn animation cho nút KHỞI CHẠY vừa tạo ---
+    const mapWrap = lastAiMsg.querySelector('.chatbot-map-wrap');
+    const runBtn = mapWrap.querySelector('.chatbot-run-btn');
+    const shipperDot = mapWrap.querySelector('.chatbot-shipper-dot');
 
-    if (aiData.map_data && aiData.map_data.trips) {
-        const startX = (aiData.map_data.depot.x / 500) * 100;
-        const startY = (aiData.map_data.depot.y / 500) * 100;
-        const depotNode = currentMap.querySelector('.node-depot');
-
-        // (Đã xóa dòng bgColor đi lạc ở đây)
-
-        depotNode.style.left = startX + '%';
-        depotNode.style.top = startY + '%';
-        fullRoute.push({ x: startX, y: startY });
-
-        aiData.map_data.trips.forEach(trip => {
-            trip.route.forEach(point => {
-                const nodeX = (point.x / 500) * 100;
-                const nodeY = (point.y / 500) * 100;
-                const node = document.createElement('div');
-                node.className = 'map-node';
-                node.innerHTML = point.step;
-
-                // 🔴 1. CHUYỂN DÒNG MÀU VÀO TRONG VÒNG LẶP (Bắt đúng bệnh)
-                const bgColor = point.type === "PICK" ? "#f97316" : "#3b82f6";
-
-                node.style.cssText = `position:absolute; left:${nodeX}%; top:${nodeY}%; transform:translate(-50%, -50%); width:20px; height:20px; background:${bgColor}; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; z-index:20;`;
-
-                // 🔴 2. THÊM LẠI DÒNG NÀY ĐỂ DÁN NÚT LÊN BẢN ĐỒ
-                mapBox.appendChild(node);
-
-                fullRoute.push({ x: nodeX, y: nodeY });
-            });
-        });
-
-        fullRoute.push({ x: startX, y: startY });
-
-        let pathD = `M ${(startX * (mapBox.clientWidth/100))} ${(startY * 3)}`;
-        fullRoute.forEach((p, i) => { if(i>0) pathD += ` L ${(p.x * (mapBox.clientWidth/100))} ${(p.y * 3)}`; });
-        svg.innerHTML = `<path d="${pathD}" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5" opacity="0.6" />`;
-    }
-
-    btn.addEventListener('click', function() {
-        this.innerHTML = "🚚 ĐANG DI CHUYỂN...";
-        shipper.style.left = fullRoute[0].x + '%';
-        shipper.style.top = fullRoute[0].y + '%';
-        shipper.style.opacity = "1";
-        let step = 1;
-        function moveNext() {
-            if (step >= fullRoute.length) { btn.innerHTML = "✅ XONG"; return; }
-            shipper.style.left = fullRoute[step].x + '%';
-            shipper.style.top = fullRoute[step].y + '%';
-            step++;
-            setTimeout(moveNext, 1000);
-        }
-        setTimeout(moveNext, 500);
+    // Xây chuỗi waypoints: KHO → tất cả điểm theo thứ tự chuyến → KHO
+    const waypoints = [{ x: depX, y: depY }];
+    tripRoutes.forEach(tr => {
+        tr.pts.forEach(pt => waypoints.push({ x: pt.x, y: pt.y }));
+        waypoints.push({ x: depX, y: depY }); // Về kho sau mỗi chuyến
     });
+
+    runBtn.addEventListener('click', function() {
+        runBtn.disabled = true;
+        runBtn.textContent = '⏳ Đang chạy...';
+        shipperDot.style.opacity = '1';
+
+        let step = 0;
+        function moveNext() {
+            if (step >= waypoints.length) {
+                runBtn.disabled = false;
+                runBtn.textContent = '🔁 CHẠY LẠI';
+                return;
+            }
+            const wp = waypoints[step];
+            shipperDot.style.left = wp.x + 'px';
+            shipperDot.style.top = wp.y + 'px';
+            step++;
+            setTimeout(moveNext, 700);
+        }
+        // Reset về kho trước rồi chạy
+        shipperDot.style.left = depX + 'px';
+        shipperDot.style.top = depY + 'px';
+        setTimeout(moveNext, 300);
+    });
+
+    sessionStorage.setItem('chatHistory', document.getElementById('chatbot-messages').innerHTML);
 };

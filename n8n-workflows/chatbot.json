@@ -1,5 +1,5 @@
 {
-  "name": "My workflow 2",
+  "name": "chatbot",
   "nodes": [
     {
       "parameters": {
@@ -11,24 +11,24 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -816,
-        208
+        -2032,
+        32
       ],
-      "id": "8bdb4eb6-6c76-40d7-b3b5-24406df26efb",
+      "id": "12e54a80-2f80-407b-b42d-7f822f154e42",
       "name": "Webhook",
       "webhookId": "7e4fcc97-1ea5-4bdd-8c8f-f25c2fe75a50"
     },
     {
       "parameters": {
-        "jsCode": "const rawData = $('Webhook').item.json.body;\n// Đổi cách đọc dữ liệu thời tiết cho chuẩn OpenWeatherMap\nconst weatherData = $('HTTP Request1').item.json; \nconst orders = rawData.orders;\n\n// OpenWeatherMap quy ước: Các mã ID dưới 700 là thời tiết xấu (Mưa, Bão, Sấm chớp, Tuyết)\n// 800 là trời quang mây tạnh.\nconst weatherId = weatherData.weather[0].id;\nconst isRaining = weatherId < 700; \nconst weatherSurcharge = isRaining ? 15000 : 0;\n\nconst MAX_WEIGHT = 30; \nlet trips = [];\n\norders.forEach(order => {\n    let weight = parseFloat(order.weight);\n    let isFragile = (order.tinh_chat === \"FRAGILE\");\n\n    if (weight > MAX_WEIGHT) {\n        trips.push({ \n            tripId: trips.length + 1, \n            vehicle: \"TRUCK\", \n            totalWeight: weight, \n            surcharge: (isFragile ? 10000 : 0) + weatherSurcharge,\n            orders: [order] \n        });\n        return;\n    }\n\n    let placed = false;\n    for (let trip of trips) {\n        if (trip.vehicle === \"MOTORBIKE\" && (trip.totalWeight + weight) <= MAX_WEIGHT) {\n            trip.orders.push(order);\n            trip.totalWeight += weight;\n            trip.surcharge += (isFragile ? 10000 : 0);\n            placed = true;\n            break;\n        }\n    }\n\n    if (!placed) {\n        trips.push({ \n            tripId: trips.length + 1, \n            vehicle: \"MOTORBIKE\", \n            totalWeight: weight, \n            surcharge: (isFragile ? 10000 : 0) + weatherSurcharge, // Chỉ thu phí mưa 1 lần mỗi chuyến\n            orders: [order] \n        });\n    }\n});\n\n// Trả về kèm thông tin thời tiết để lát báo cáo\nreturn trips.map(trip => ({ \n    json: { \n        tripData: trip, \n        isRaining: isRaining \n    } \n}));"
+        "jsCode": "const rawData = $('Webhook').item.json.body;\nconst weatherData = $('HTTP Request1').item.json; \nconst orders = rawData.orders;\n\nconst weatherId = weatherData.weather[0].id;\nconst isRaining = weatherId < 700; \nconst weatherSurcharge = isRaining ? 15000 : 0;\n\nconst MAX_WEIGHT = 30; \nlet trips = [];\n\norders.forEach(order => {\n    // TỰ ĐỘNG GÁN TỌA ĐỘ GIẢ LẬP NẾU THIẾU (Tránh lỗi HTTP Request)\n    if (!order.lat) order.lat = (16.06 + Math.random() * 0.02).toFixed(6);\n    if (!order.lng) order.lng = (108.21 + Math.random() * 0.02).toFixed(6);\n\n    let weight = parseFloat(order.weight);\n    let isFragile = (order.tinh_chat === \"FRAGILE\");\n\n    if (weight > MAX_WEIGHT) {\n        trips.push({ \n            tripId: trips.length + 1, \n            vehicle: \"TRUCK\", \n            totalWeight: weight, \n            surcharge: (isFragile ? 10000 : 0) + weatherSurcharge,\n            orders: [order] \n        });\n        return;\n    }\n\n    let placed = false;\n    for (let trip of trips) {\n        if (trip.vehicle === \"MOTORBIKE\" && (trip.totalWeight + weight) <= MAX_WEIGHT) {\n            trip.orders.push(order);\n            trip.totalWeight += weight;\n            trip.surcharge += (isFragile ? 10000 : 0);\n            placed = true;\n            break;\n        }\n    }\n\n    if (!placed) {\n        trips.push({ \n            tripId: trips.length + 1, \n            vehicle: \"MOTORBIKE\", \n            totalWeight: weight, \n            surcharge: (isFragile ? 10000 : 0) + weatherSurcharge,\n            orders: [order] \n        });\n    }\n});\n\nreturn trips.map(trip => ({ \n    json: { \n        tripData: trip, \n        isRaining: isRaining \n    } \n}));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -224,
-        384
+        -1440,
+        208
       ],
-      "id": "be230b3e-72f7-4796-9615-8d383b4a4cb6",
+      "id": "3fd251b9-06b5-4cd9-9748-fcf0c2b43679",
       "name": "Code in JavaScript"
     },
     {
@@ -38,10 +38,10 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        0,
-        384
+        -1216,
+        208
       ],
-      "id": "3c55b88e-d193-4efe-896c-359aa2e3a059",
+      "id": "eadb7503-e188-4c43-92de-de689e4f3c85",
       "name": "Loop Over Items"
     },
     {
@@ -54,10 +54,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        336,
-        464
+        -880,
+        288
       ],
-      "id": "a5209083-c29e-4766-b083-36abbbaa9631",
+      "id": "e26a7ff3-190e-4f49-b112-19d589453a3e",
       "name": "HTTP Request"
     },
     {
@@ -69,23 +69,23 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        512,
-        304
+        -704,
+        128
       ],
-      "id": "7c65ec26-1385-45ef-8a1e-381922c22e5a",
+      "id": "585b30e5-9e98-4be0-a025-84fba263f4af",
       "name": "Respond to Webhook"
     },
     {
       "parameters": {
-        "jsCode": "// 1. Lấy dữ liệu OSRM và Dữ liệu từ Node chia đơn\nconst osrmResults = $('HTTP Request').all(); \nconst originalTrips = $('Code in JavaScript').all().map(item => item.json);\n\nlet tongGiaoLe = 0; \nlet tongGop = 0; \nlet mapTrips = [];\n\n// 2. Kế toán tính tiền chi tiết & OSRM Sắp xếp Lộ trình\nconst finalTrips = osrmResults.map((osrmItem, index) => {\n    let t = originalTrips[index].tripData;\n    let isRain = originalTrips[index].isRaining;\n    let osrmData = osrmItem.json; \n    \n    // ... (Tính tiền giữ nguyên) ...\n    let distKm = parseFloat((osrmData.trips[0].distance / 1000).toFixed(1)); \n    let WEATHER_SURCHARGE = isRain ? 15000 : 0;\n    let phiCoBan = t.vehicle === \"TRUCK\" ? 50000 : 15000;\n    let phiKm = distKm * 5000;\n    let phiRotDiem = (t.orders.length - 1) * 5000;\n    \n    let phiDeVo = 0;\n    t.orders.forEach(o => {\n        let isFragile = (o.tinh_chat === \"FRAGILE\" || o.category === \"FRAGILE\");\n        if (isFragile) phiDeVo += 10000;\n        tongGiaoLe += 15000 + (isFragile ? 10000 : 0) + (distKm * 5000) + WEATHER_SURCHARGE;\n    });\n\n    let tongChuyen = phiCoBan + phiKm + phiRotDiem + phiDeVo + WEATHER_SURCHARGE;\n    tongGop += tongChuyen;\n\n    // --- LOGIC VẼ ĐƯỜNG P2P: TẠO NÚT LẤY & NÚT GIAO RIÊNG ---\n    let waypoints = osrmData.waypoints; \n    let sortableOrders = [];\n\n    for(let i = 1; i < waypoints.length; i++) {\n        sortableOrders.push({\n            order: t.orders[i-1], \n            optimized_step: waypoints[i].waypoint_index \n        });\n    }\n\n    sortableOrders.sort((a, b) => a.optimized_step - b.optimized_step);\n\n    let routeCoords = [];\n    let stepCount = 1;\n\n    // Duyệt qua từng đơn, tạo 1 nút LẤY (màu đỏ cam) và 1 nút GIAO (màu xanh)\n    sortableOrders.forEach(item => {\n        // Tọa độ người GỬI (Lấy hàng)\n        routeCoords.push({ \n            step: stepCount++, \n            type: \"PICK\",\n            id: item.order.id + \" (Lấy)\", \n            x: item.order.s_x_pixel || Math.floor(Math.random() * 300 + 50),\n            y: item.order.s_y_pixel || Math.floor(Math.random() * 300 + 50)  \n        });\n\n        // Tọa độ người NHẬN (Giao hàng)\n        routeCoords.push({ \n            step: stepCount++, \n            type: \"DROP\",\n            id: item.order.id + \" (Giao)\", \n            x: item.order.x_pixel || Math.floor(Math.random() * 300 + 50),\n            y: item.order.y_pixel || Math.floor(Math.random() * 300 + 50)  \n        });\n    });\n\n    mapTrips.push({\n        name: t.vehicle === \"TRUCK\" ? `Xe Tải ${index+1}` : `Xe Máy ${index+1}`,\n        color: t.vehicle === \"TRUCK\" ? \"#f59e0b\" : \"#3b82f6\",\n        route: routeCoords\n    });\n\n    return {\n        tripName: \"Chuyến \" + (index + 1) + (t.vehicle === \"TRUCK\" ? \" (Xe Tải)\" : \" (Xe Máy)\"),\n        distance: distKm + \" km\",\n        totalOrders: t.orders.length,\n        totalTripCost: Math.round(tongChuyen) + \" VNĐ\"\n    };\n});\n\n// 3. TÍNH TOÁN \"TÂM\" BẢN ĐỒ DỰA TRÊN NGƯỜI GỬI\nlet firstTrip = originalTrips[0]?.tripData;\nlet firstOrder = firstTrip?.orders[0];\n\n// Nếu có tọa độ pixel của người gửi thì lấy làm Depot, không thì để 250 (giữa radar)\nlet startX = firstOrder?.s_x_pixel || 250;\nlet startY = firstOrder?.s_y_pixel || 250;\nlet startName = firstOrder?.s_x_pixel ? \"ĐIỂM LẤY HÀNG\" : \"KHO TỔNG\";\n\nlet tietKiem = Math.round(tongGiaoLe - tongGop);\nlet msgRain = originalTrips[0]?.isRaining ? \"⚠️ Đà Nẵng đang mưa, em đã tự động cộng phụ phí.\" : \"☀️ Trời đẹp, không có phụ phí rủi ro.\";\n\nlet finalResponse = {\n\n    chatbot_message: `<b>Sếp ơi, em đã tối ưu xong!</b><br>${msgRain}<br>Gom thành công <b>${finalTrips.length} chuyến xe</b>.<br>🚀 Lộ trình đi giao đã được thuật toán AI sắp xếp lại ngắn nhất (Shipper không phải quay đầu).<br>💰 Thuật toán giúp sếp <b>TIẾT KIỆM ĐƯỢC ${tietKiem.toLocaleString('vi-VN')} VNĐ</b> so với giao lẻ!`,\n\n    invoices: finalTrips, // Trả về Hóa đơn chi tiết đầy đủ\n\n    map_data: { // Trả về data vẽ bản đồ (đã có biến step: 1, 2, 3...)\n        depot: { id: \"START\", name: startName, x: startX, y: startY },\n        trips: mapTrips\n    }\n};\n\nreturn [{ json: finalResponse }];"
+        "jsCode": "// 1. Lấy dữ liệu OSRM và Dữ liệu từ Node chia đơn\nconst osrmResults = $('HTTP Request').all(); \nconst originalTrips = $('Code in JavaScript').all().map(item => item.json);\n\nlet tongGiaoLe = 0; \nlet tongGop = 0; \nlet mapTrips = [];\n\n// Thu thập tất cả đơn để tính scale tọa độ\nconst allOrdersFlat = originalTrips.flatMap(t => t.tripData.orders);\nconst hasRealCoords = allOrdersFlat.some(o => o.lat && parseFloat(o.lat) > 0);\n\nfunction latLngToPixel(lat, lng, allOrders, mapW, mapH, pad) {\n    const lats = allOrders.map(o => parseFloat(o.lat)).filter(v => v > 0);\n    const lngs = allOrders.map(o => parseFloat(o.lng)).filter(v => v > 0);\n    if (lats.length === 0) return null;\n    const minLat = Math.min(...lats), maxLat = Math.max(...lats);\n    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);\n    const rangeX = (maxLng - minLng) || 0.001;\n    const rangeY = (maxLat - minLat) || 0.001;\n    const px = Math.round(pad + ((parseFloat(lng) - minLng) / rangeX) * (mapW - 2 * pad));\n    const py = Math.round(pad + ((maxLat - parseFloat(lat)) / rangeY) * (mapH - 2 * pad));\n    return { x: px, y: py };\n}\n\n// 2. Kế toán tính tiền chi tiết cho từng chuyến & OSRM Sắp xếp Lộ trình\nconst finalTrips = osrmResults.map((osrmItem, index) => {\n    let t = originalTrips[index].tripData;\n    let isRain = originalTrips[index].isRaining;\n    let osrmData = osrmItem.json; \n    \n    let distKm = parseFloat((osrmData.trips[0].distance / 1000).toFixed(1)); \n    let WEATHER_SURCHARGE = isRain ? 15000 : 0;\n    \n    let phiCoBan = t.vehicle === \"TRUCK\" ? 50000 : 15000;\n    let phiKm = distKm * 5000;\n    let phiRotDiem = (t.orders.length - 1) * 5000;\n    \n    let phiDeVo = 0;\n    t.orders.forEach(o => {\n        let isFragile = (o.tinh_chat === \"FRAGILE\" || o.category === \"FRAGILE\");\n        if (isFragile) phiDeVo += 10000;\n        tongGiaoLe += 15000 + (isFragile ? 10000 : 0) + (distKm * 5000) + WEATHER_SURCHARGE;\n    });\n\n    let tongChuyen = phiCoBan + phiKm + phiRotDiem + phiDeVo + WEATHER_SURCHARGE;\n    tongGop += tongChuyen;\n\n    let waypoints = osrmData.waypoints; \n    let sortableOrders = [];\n\n    for(let i = 1; i < waypoints.length; i++) {\n        sortableOrders.push({\n            order: t.orders[i-1], \n            optimized_step: waypoints[i].waypoint_index\n        });\n    }\n\n    sortableOrders.sort((a, b) => a.optimized_step - b.optimized_step);\n\n    // Xây routeCoords: nếu có lat/lng thực dùng pixel; không thì không gán x/y để frontend tự layout vòng tròn\n    let routeCoords = sortableOrders.map((item, idx) => {\n        let pt = { \n            step: idx + 1,\n            id: item.order.id || \"Đơn hàng\", \n            weight: item.order.weight + \"kg\"\n        };\n        if (hasRealCoords) {\n            const px = latLngToPixel(item.order.lat, item.order.lng, allOrdersFlat, 280, 220, 20);\n            if (px) { pt.x = px.x; pt.y = px.y; }\n        }\n        return pt;\n    });\n\n    mapTrips.push({\n        name: t.vehicle === \"TRUCK\" ? `Xe Tải ${index+1}` : `Xe Máy ${index+1}`,\n        color: t.vehicle === \"TRUCK\" ? \"#f59e0b\" : \"#3b82f6\",\n        route: routeCoords\n    });\n\n    return {\n        tripName: \"Chuyến \" + (index + 1) + (t.vehicle === \"TRUCK\" ? \" (Xe Tải)\" : \" (Xe Máy)\"),\n        distance: distKm + \" km\",\n        totalOrders: t.orders.length,\n        breakdown_fee: {\n            \"Phí cơ bản\": phiCoBan,\n            \"Phí quãng đường\": phiKm,\n            \"Phí rớt điểm\": phiRotDiem,\n            \"Phí dễ vỡ\": phiDeVo,\n            \"Phí thời tiết\": WEATHER_SURCHARGE\n        },\n        totalTripCost: Math.round(tongChuyen) + \" VNĐ\"\n    };\n});\n\n// 3. BÁO CÁO TỔNG KẾT\nlet tietKiem = Math.round(tongGiaoLe - tongGop);\nlet msgRain = originalTrips[0] && originalTrips[0].isRaining ? \"⚠️ Đà Nẵng đang mưa, hệ thống tự động cộng phụ phí thời tiết.\" : \"☀️ Thời tiết đẹp, không có phụ phí rủi ro.\";\n\n// Tọa độ kho (Đà Nẵng): nếu có lat/lng thực mới tính pixel kho\nlet depotPx = null;\nif (hasRealCoords) {\n    depotPx = latLngToPixel(16.065, 108.215, allOrdersFlat, 280, 220, 20);\n}\n\nlet finalResponse = {\n    chatbot_message: `<b>Sếp ơi, em đã tối ưu xong!</b><br>${msgRain}<br>Gom thành công <b>${finalTrips.length} chuyến xe</b>.<br>🚀 Lộ trình đi giao đã được thuật toán AI sắp xếp lại ngắn nhất (Shipper không phải quay đầu).<br>💰 Thuật toán giúp sếp <b>TIẾT KIỆM ĐƯỢC ${tietKiem.toLocaleString('vi-VN')} VNĐ</b> so với giao lẻ!`,\n    invoices: finalTrips,\n    map_data: {\n        depot: { id: \"KHO\", name: \"KHO TỔNG\", x: depotPx ? depotPx.x : null, y: depotPx ? depotPx.y : null },\n        trips: mapTrips\n    }\n};\n\nreturn [{ json: finalResponse }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        320,
-        304
+        -896,
+        128
       ],
-      "id": "04e9833c-d1ea-4a36-9238-d2a6db81e7b6",
+      "id": "e7bf0f94-2222-4171-b409-77dda15630cb",
       "name": "Code in JavaScript1"
     },
     {
@@ -96,10 +96,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -608,
-        208
+        -1824,
+        32
       ],
-      "id": "d6d5c20d-acd7-4b01-8c03-90508473957e",
+      "id": "ee952853-3042-45a5-bb9c-5a70c69f672b",
       "name": "HTTP Request1"
     },
     {
@@ -159,10 +159,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -416,
-        208
+        -1632,
+        32
       ],
-      "id": "f5ad20e1-37f8-4bc8-9b37-014c52b59757",
+      "id": "8fc775f5-74ff-4bed-ac97-3ffcc0eac218",
       "name": "Switch"
     },
     {
@@ -172,10 +172,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -240,
-        32
+        -1456,
+        -144
       ],
-      "id": "d3db8a4b-6c53-46de-89f8-64889134f2f3",
+      "id": "5dccdce7-5c6a-4765-96a4-7b68b360b170",
       "name": "Code in JavaScript2"
     },
     {
@@ -187,10 +187,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        0,
-        0
+        -1216,
+        -176
       ],
-      "id": "ff1942bc-491a-4147-baa2-eddf0615f572",
+      "id": "bae17742-523f-42f7-85ef-1ea61b5b3e5a",
       "name": "Respond to Webhook1"
     }
   ],
@@ -304,10 +304,10 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "dea7a878-1fde-4e43-ac79-d4ad37a65e91",
+  "versionId": "5ece1336-69a5-4c96-8084-af26ff1c9aaf",
   "meta": {
-    "instanceId": "06d08ae9bd493af0b1767c4436cf4151d536e3fef103f815b9e2eb87ba44bfad"
+    "instanceId": "ccd245c7789a7fa6fbebf8f4ac02c10f5def7c00eea7d6fde7f7ca90e02f914e"
   },
-  "id": "N1hGClgtcK0dI5zG",
+  "id": "zIgeiVI92F2aAwKC",
   "tags": []
 }

@@ -45,19 +45,35 @@
     padding: 15px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-weight: bold;
     border-bottom: 1px solid #334155;
 }
-.chatbot-header button {
-    background: none; border: none; color: white; cursor: pointer;
+.close-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: none;
+    border-radius: 8px;
+    padding: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8 !important;
+    cursor: pointer;
+}
+.close-btn:hover {
+    background: #ef4444 !important;
+    color: white !important;
+    transform: rotate(90deg);
 }
 .chatbot-messages {
     padding: 15px;
     min-height: 100px;
-    max-height: 300px;
+    max-height: 400px;
     overflow-y: auto;
     font-size: 14px;
     line-height: 1.5;
+    background: #0f172a;
 }
 
 #btn-xem-lo-trinh {
