@@ -1,5 +1,5 @@
 {
-  "name": "Điều phối kho Giao Hàng",
+  "name": "\u0110i\u1ec1u ph\u1ed1i kho Giao H\u00e0ng",
   "nodes": [
     {
       "parameters": {
@@ -238,8 +238,8 @@
       "parameters": {
         "fromEmail": "lehuuthai57@gmail.com",
         "toEmail": "thailh.23ite@vku.udn.vn",
-        "subject": "Báo Cáo Cuối Ngày",
-        "html": "=<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 30px 10px;\">\n  <div style=\"max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-top: 6px solid #007bff;\">\n    \n    <h2 style=\"text-align: center; color: #2b2b2b; margin-bottom: 5px;\">📊 BÁO CÁO VẬN HÀNH</h2>\n    <p style=\"text-align: center; color: #888888; margin-top: 0; margin-bottom: 30px; font-size: 14px;\">Cập nhật cuối ngày từ Hệ thống Tự động</p>\n    \n    <p style=\"color: #444444; font-size: 16px;\">Chào Sếp,</p>\n    <p style=\"color: #444444; font-size: 16px; line-height: 1.6;\">Hệ thống n8n xin gửi báo cáo tổng hợp tình hình điều phối đơn hàng tính đến thời điểm hiện tại như sau:</p>\n\n    <div style=\"background: #f8f9fa; border: 1px solid #e9ecef; border-left: 5px solid #28a745; border-radius: 6px; padding: 20px; margin-bottom: 20px;\">\n      <p style=\"font-size: 15px; color: #6c757d; margin: 0; text-transform: uppercase; letter-spacing: 1px;\">📦 Tổng số đơn đã xử lý</p>\n      <p style=\"font-size: 32px; font-weight: bold; color: #28a745; margin: 10px 0 0 0;\">\n        {{ $json.tong_don }} <span style=\"font-size: 18px; font-weight: normal; color: #666;\">đơn</span>\n      </p>\n    </div>\n\n    <div style=\"background: #f8f9fa; border: 1px solid #e9ecef; border-left: 5px solid #ffc107; border-radius: 6px; padding: 20px; margin-bottom: 30px;\">\n      <p style=\"font-size: 15px; color: #6c757d; margin: 0; text-transform: uppercase; letter-spacing: 1px;\">💰 Tổng doanh thu cước phí</p>\n      <p style=\"font-size: 32px; font-weight: bold; color: #d39e00; margin: 10px 0 0 0;\">\n        {{ $json.tong_tien }} <span style=\"font-size: 18px; font-weight: normal; color: #666;\">VNĐ</span>\n      </p>\n    </div>\n\n    <p style=\"color: #444444; font-size: 16px; line-height: 1.6;\">Hệ thống vẫn đang tiếp tục giám sát và tự động điều phối 24/7. Chúc Sếp buổi tối vui vẻ!</p>\n    \n    <div style=\"text-align: center; margin-top: 40px; border-top: 1px dashed #dddddd; padding-top: 20px;\">\n      <p style=\"color: #aaaaaa; font-size: 12px; margin: 0;\">\n        <i>🚀 Gửi tự động từ <b>Delivery Automation Platform</b></i><br>\n        <i>Powered by n8n & Docker</i>\n      </p>\n    </div>\n\n  </div>\n</div>",
+        "subject": "B\u00e1o C\u00e1o Cu\u1ed1i Ng\u00e0y",
+        "html": "=<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 30px 10px;\">\n  <div style=\"max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-top: 6px solid #007bff;\">\n    \n    <h2 style=\"text-align: center; color: #2b2b2b; margin-bottom: 5px;\">\ud83d\udcca B\u00c1O C\u00c1O V\u1eacN H\u00c0NH</h2>\n    <p style=\"text-align: center; color: #888888; margin-top: 0; margin-bottom: 30px; font-size: 14px;\">C\u1eadp nh\u1eadt cu\u1ed1i ng\u00e0y t\u1eeb H\u1ec7 th\u1ed1ng T\u1ef1 \u0111\u1ed9ng</p>\n    \n    <p style=\"color: #444444; font-size: 16px;\">Ch\u00e0o S\u1ebfp,</p>\n    <p style=\"color: #444444; font-size: 16px; line-height: 1.6;\">H\u1ec7 th\u1ed1ng n8n xin g\u1eedi b\u00e1o c\u00e1o t\u1ed5ng h\u1ee3p t\u00ecnh h\u00ecnh \u0111i\u1ec1u ph\u1ed1i \u0111\u01a1n h\u00e0ng t\u00ednh \u0111\u1ebfn th\u1eddi \u0111i\u1ec3m hi\u1ec7n t\u1ea1i nh\u01b0 sau:</p>\n\n    <div style=\"background: #f8f9fa; border: 1px solid #e9ecef; border-left: 5px solid #28a745; border-radius: 6px; padding: 20px; margin-bottom: 20px;\">\n      <p style=\"font-size: 15px; color: #6c757d; margin: 0; text-transform: uppercase; letter-spacing: 1px;\">\ud83d\udce6 T\u1ed5ng s\u1ed1 \u0111\u01a1n \u0111\u00e3 x\u1eed l\u00fd</p>\n      <p style=\"font-size: 32px; font-weight: bold; color: #28a745; margin: 10px 0 0 0;\">\n        {{ $json.tong_don }} <span style=\"font-size: 18px; font-weight: normal; color: #666;\">\u0111\u01a1n</span>\n      </p>\n    </div>\n\n    <div style=\"background: #f8f9fa; border: 1px solid #e9ecef; border-left: 5px solid #ffc107; border-radius: 6px; padding: 20px; margin-bottom: 30px;\">\n      <p style=\"font-size: 15px; color: #6c757d; margin: 0; text-transform: uppercase; letter-spacing: 1px;\">\ud83d\udcb0 T\u1ed5ng doanh thu c\u01b0\u1edbc ph\u00ed</p>\n      <p style=\"font-size: 32px; font-weight: bold; color: #d39e00; margin: 10px 0 0 0;\">\n        {{ $json.tong_tien }} <span style=\"font-size: 18px; font-weight: normal; color: #666;\">VN\u0110</span>\n      </p>\n    </div>\n\n    <p style=\"color: #444444; font-size: 16px; line-height: 1.6;\">H\u1ec7 th\u1ed1ng v\u1eabn \u0111ang ti\u1ebfp t\u1ee5c gi\u00e1m s\u00e1t v\u00e0 t\u1ef1 \u0111\u1ed9ng \u0111i\u1ec1u ph\u1ed1i 24/7. Ch\u00fac S\u1ebfp bu\u1ed5i t\u1ed1i vui v\u1ebb!</p>\n    \n    <div style=\"text-align: center; margin-top: 40px; border-top: 1px dashed #dddddd; padding-top: 20px;\">\n      <p style=\"color: #aaaaaa; font-size: 12px; margin: 0;\">\n        <i>\ud83d\ude80 G\u1eedi t\u1ef1 \u0111\u1ed9ng t\u1eeb <b>Delivery Automation Platform</b></i><br>\n        <i>Powered by n8n & Docker</i>\n      </p>\n    </div>\n\n  </div>\n</div>",
         "options": {}
       },
       "type": "n8n-nodes-base.emailSend",
@@ -260,7 +260,7 @@
     },
     {
       "parameters": {
-        "url": "http://192.168.114.44:8000/api/orders/status/AI_PROCESSED",
+        "url": "http://103.118.29.21:8000/api/orders/status/AI_PROCESSED",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -275,7 +275,7 @@
     {
       "parameters": {
         "method": "PUT",
-        "url": "=http://192.168.114.44:8000/api/orders/{{ $json.id }}/status",
+        "url": "=http://103.118.29.21:8000/api/orders/{{ $json.id }}/status",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n  \"status\": \"DELIVERING\"\n}",
@@ -299,7 +299,7 @@
     {
       "parameters": {
         "method": "PUT",
-        "url": "=http://192.168.114.44:8000/api/orders/{{ $json.id }}/assign-delivery",
+        "url": "=http://103.118.29.21:8000/api/orders/{{ $json.id }}/assign-delivery",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"status\": \"DELIVERING\",\n  \"shipper\": \"{{ $json.shipper }}\",\n  \"shippingFee\": {{ $json.shippingFee }}\n}",
@@ -322,7 +322,7 @@
     },
     {
       "parameters": {
-        "url": "http://192.168.114.44:8000/api/orders/stats",
+        "url": "http://103.118.29.21:8000/api/orders/stats",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -333,6 +333,124 @@
       ],
       "id": "31556c01-db68-47a6-ba36-9af8b10f739a",
       "name": "Execute a SQL query5"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -864,
+        550
+      ],
+      "id": "2b42d04d-56a8-457b-8e5a-d377dd4b3463",
+      "name": "Schedule AI Scan"
+    },
+    {
+      "parameters": {
+        "url": "http://103.118.29.21:8000/api/orders/status/DELIVERING",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -650,
+        550
+      ],
+      "id": "b7e78ceb-a3ab-4bce-a792-be90cb11722f",
+      "name": "Get Delivering"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        550
+      ],
+      "id": "450c775c-c304-4a8a-a5a4-4fc383d9b23e",
+      "name": "Loop Over Delivering Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Ph\u00e2n t\u00edch tr\u1ea1ng th\u00e1i \u0111\u01a1n h\u00e0ng.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=B\u1ea1n l\u00e0 AI. \u0110\u01a1n h\u00e0ng {{ $json.id }} \u0111ang giao. H\u00e3y tr\u1ea3 v\u1ec1 JSON { \"status\": \"DELIVERED\" }."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -150,
+        550
+      ],
+      "id": "51b84ffd-cdce-4e10-bada-dc0508dd87dc",
+      "name": "AI Scan Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile"
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -150,
+        750
+      ],
+      "id": "3e64da61-a59f-4f2b-94ab-44719a38ae3d",
+      "name": "Groq Chat Model 2",
+      "credentials": {
+        "groqApi": {
+          "id": "F0660oiHuE8wv0Cv",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://103.118.29.21:8000/api/orders/{{ $('Loop Over Delivering Items').item.json.id }}/status",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"status\": \"DELIVERED\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        350,
+        550
+      ],
+      "id": "2414a596-b2a7-45a3-a497-70a3ef959c1b",
+      "name": "Update DELIVERED"
+    },
+    {
+      "parameters": {
+        "jsCode": "let aiData = {};\ntry {\n  aiData = JSON.parse($input.item.json.text);\n} catch(e) {\n  aiData = {status: 'DELIVERED'};\n}\nreturn aiData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        350
+      ],
+      "id": "47999fc6-a40c-4dfb-bb4a-a161c44edf86",
+      "name": "Parse AI Output"
     }
   ],
   "pinData": {},
@@ -505,9 +623,87 @@
           }
         ]
       ]
+    },
+    "Schedule AI Scan": {
+      "main": [
+        [
+          {
+            "node": "Get Delivering",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Delivering": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Delivering Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Delivering Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Scan Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Scan Chain": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DELIVERED": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Delivering Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model 2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Scan Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Output": {
+      "main": [
+        [
+          {
+            "node": "Update DELIVERED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",

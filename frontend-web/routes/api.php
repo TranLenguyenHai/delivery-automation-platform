@@ -51,6 +51,8 @@ Route::get('/orders/status/{status}', function ($status) {
     $dbStatus = $status;
     if ($status === 'AI_PROCESSED') {
         $dbStatus = 'Chờ lấy hàng';
+    } elseif ($status === 'DELIVERING') {
+        $dbStatus = 'Đang giao hàng';
     }
     $orders = DB::table('orders')->where('status', $dbStatus)->get();
     return response()->json($orders);
@@ -61,6 +63,7 @@ Route::put('/orders/{id}/status', function (Request $request, $id) {
     $status = $request->input('status');
     if ($status === 'DELIVERING') $status = 'Đang giao hàng';
     if ($status === 'CANCELLED') $status = 'Giao thất bại';
+    if ($status === 'DELIVERED') $status = 'Giao thành công';
 
     DB::table('orders')->where('id', $id)->update(['status' => $status]);
     return response()->json(['success' => true]);

@@ -64,7 +64,7 @@ Route::post('/orders/store', function (Request $request) {
     $carrierFee = 0; $bestShipper = null; $note = $request->note ?? '';
 
     try {
-        $response = Http::timeout(10)->post('http://127.0.0.1:5678/webhook/e99d1f26-3a52-49d9-93e5-ed402977fcb6', ['weight' => $weight, 'distance' => 10]);
+        $response = Http::timeout(10)->post(env('N8N_BASE_URL', 'http://localhost:5678') . '/webhook/' . env('N8N_WEBHOOK_OPTIMIZE', 'e99d1f26-3a52-49d9-93e5-ed402977fcb6'), ['weight' => $weight, 'distance' => 10]);
         if ($response->successful()) {
             $result = $response->json();
             $bestShipper = $result['shipper'] ?? 'GHTK';
@@ -92,10 +92,11 @@ Route::post('/orders/confirm', function (Request $request) {
             $order = DB::table('orders')->where('id', $id)->first();
             if ($order) {
                 try {
-                    $webhookUrl = 'http://127.0.0.1:5678/webhook/ai-logistic-trigger';
+                    $n8nBase = env('N8N_BASE_URL', 'http://localhost:5678');
+                    $webhookUrl = $n8nBase . '/webhook/ai-logistic-trigger';
                     $response = Http::timeout(120)->post($webhookUrl, ['orderId' => $id, 'distance' => 17]);
                     if ($response->status() == 404) {
-                        $webhookUrl = 'http://127.0.0.1:5678/webhook-test/ai-logistic-trigger';
+                        $webhookUrl = $n8nBase . '/webhook-test/ai-logistic-trigger';
                         $response = Http::timeout(120)->post($webhookUrl, ['orderId' => $id, 'distance' => 17]);
                     }
                     if ($response->successful()) {
@@ -155,7 +156,7 @@ Route::post('/orders/complete', function (Request $request) {
 
                 try {
                     // Cập nhật URL Webhook Telegram mới của bạn
-                    Http::timeout(10)->post('http://127.0.0.1:5678/webhook/627dd940-97f9-472c-b88b-93f953d7520a/webhook', [
+                    Http::timeout(10)->post(env('N8N_BASE_URL', 'http://localhost:5678') . '/webhook/' . env('N8N_WEBHOOK_TELEGRAM', '627dd940-97f9-472c-b88b-93f953d7520a') . '/webhook', [
                         'id_don' => '#REQ-' . $order->id,
                         'thoi_gian' => date('d/m/Y H:i:s'),
                         'khoi_luong' => (float) $order->weight,
@@ -198,10 +199,11 @@ Route::post('/orders/optimize', function (Request $request) {
         $order = DB::table('orders')->where('id', $id)->first();
         if ($order) {
             try {
-                $webhookUrl = 'http://127.0.0.1:5678/webhook/ai-logistic-trigger';
+                $n8nBase = env('N8N_BASE_URL', 'http://localhost:5678');
+                $webhookUrl = $n8nBase . '/webhook/ai-logistic-trigger';
                 $response = Http::timeout(120)->post($webhookUrl, ['orderId' => $id, 'distance' => 17]);
                 if ($response->status() == 404) {
-                    $webhookUrl = 'http://127.0.0.1:5678/webhook-test/ai-logistic-trigger';
+                    $webhookUrl = $n8nBase . '/webhook-test/ai-logistic-trigger';
                     $response = Http::timeout(120)->post($webhookUrl, ['orderId' => $id, 'distance' => 17]);
                 }
                 if ($response->successful()) {

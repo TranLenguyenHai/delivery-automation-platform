@@ -121,7 +121,7 @@
     {
       "parameters": {
         "method": "PUT",
-        "url": "=http://192.168.1.128:8000/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
+        "url": "=http://103.118.29.21:8000/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n  \"additionalFee\": 0,\n  \"status\": \"STANDARD_SHIPPING\",\n  \"noteAppend\": \" | AI_TAG: NORMAL\"\n}",
@@ -145,7 +145,7 @@
     {
       "parameters": {
         "method": "PUT",
-        "url": "=http://192.168.1.128:8000/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
+        "url": "=http://103.118.29.21:8000/api/orders/{{ $('Webhook').item.json.body.orderId }}/ai-update",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n  \"additionalFee\": 0,\n  \"status\": \"STANDARD_SHIPPING\",\n  \"noteAppend\": \" | AI_TAG: NORMAL\"\n}",
@@ -162,7 +162,7 @@
     },
     {
       "parameters": {
-        "url": "http://192.168.1.128:8000/api/orders/latest",
+        "url": "http://103.118.29.21:8000/api/orders/latest",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -232,7 +232,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://piliform-subventricous-jimmie.ngrok-free.dev/webhook/e99d1f26-3a52-49d9-93e5-ed402977fcb6",
+        "url": "http://103.118.29.21:5678/webhook/e99d1f26-3a52-49d9-93e5-ed402977fcb6",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"weight\": {{$json.body.weight}},\n  \"sender_address\": \"{{$json.body.sender_address}}\",\n  \"receiver_address\": \"{{$json.body.receiver_address}}\"\n}",

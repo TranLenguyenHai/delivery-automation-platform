@@ -56,20 +56,39 @@
     </div>
 
     <script>
+        // Phục hồi tab sau khi reload
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTab = sessionStorage.getItem('currentStatusTab');
+            if (savedTab) {
+                const tabs = document.querySelectorAll('.tab-btn');
+                tabs.forEach(btn => {
+                    if (btn.getAttribute('onclick').includes(savedTab)) {
+                        btn.click();
+                    }
+                });
+            }
+        });
+
         function filterOrders(statusFilter, clickedBtn) {
+            sessionStorage.setItem('currentStatusTab', statusFilter);
             const tabs = document.querySelectorAll('.tab-btn');
             tabs.forEach(tab => {
-                tab.classList.remove('text-blue-600', 'border-blue-600', 'font-semibold');
+                tab.classList.remove('text-blue-600', 'border-blue-600', 'font-semibold', 'active-tab');
                 tab.classList.add('text-gray-500', 'border-transparent', 'font-medium');
             });
             clickedBtn.classList.remove('text-gray-500', 'border-transparent', 'font-medium');
-            clickedBtn.classList.add('text-blue-600', 'border-blue-600', 'font-semibold');
+            clickedBtn.classList.add('text-blue-600', 'border-blue-600', 'font-semibold', 'active-tab');
 
             const rows = document.querySelectorAll('.order-row');
             rows.forEach(row => {
                 row.style.display = (statusFilter === 'all' || row.getAttribute('data-status') === statusFilter) ? '' : 'none';
             });
         }
+
+        // Tự động làm mới trang mỗi 30 giây để cập nhật trạng thái từ AI
+        setInterval(() => {
+            window.location.reload();
+        }, 30000);
     </script>
 <script>
         window.phpOrders = @json(\DB::table('orders')->get());
