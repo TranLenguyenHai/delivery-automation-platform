@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             try {
                 const selectedOrders = pool.slice(0, num);
-                const response = await fetch('http://localhost:5678/webhook/toi-uu-logistics', {
+                const response = await fetch('http://103.118.29.21:5678/webhook/toi-uu-logistics', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ orders: selectedOrders })
