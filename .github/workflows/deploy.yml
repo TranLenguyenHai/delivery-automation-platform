@@ -36,6 +36,7 @@ jobs:
             
             echo "5. Khởi động lại các Service nền tảng..."
             cd ~/delivery-automation-platform
+            docker rm -f n8n 2>/dev/null || true
             docker-compose up -d
             
             echo "6. Khởi động Laravel Web Server..."
