@@ -1,0 +1,45 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          timeout: "120s"
+          script_stop: true
+          script: |
+            echo "1. Di chuyển vào thư mục dự án..."
+            cd ~/delivery-automation-platform
+            
+            echo "2. Lấy code mới nhất từ nhánh main..."
+            git pull origin main
+            
+            echo "3. Cập nhật thư viện Laravel..."
+            cd frontend-web
+            export COMPOSER_ALLOW_SUPERUSER=1
+            composer install --no-dev --optimize-autoloader --no-interaction
+            
+            echo "4. Chạy Migration CSDL..."
+            php artisan migrate --force
+            
+            echo "5. Khởi động lại các Service nền tảng..."
+            cd ~/delivery-automation-platform
+            docker-compose up -d
+            
+            echo "6. Khởi động Laravel Web Server..."
+            cd frontend-web
+            pkill -f "php artisan serve" || true
+            nohup php artisan serve --host=0.0.0.0 --port=8000 > /var/log/laravel.log 2>&1 &
+            
+            echo "✅ HOÀN TẤT TRIỂN KHAI TỰ ĐỘNG LÊN VPS!"
