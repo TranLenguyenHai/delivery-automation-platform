@@ -22,8 +22,9 @@ jobs:
             echo "1. Di chuyển vào thư mục dự án..."
             cd ~/delivery-automation-platform
             
-            echo "2. Lấy code mới nhất từ nhánh main..."
-            git pull origin main
+            echo "2. Lấy code mới nhất từ nhánh main (Xóa bỏ các file rác)..."
+            git fetch origin main
+            git reset --hard origin/main
             
             echo "3. Cập nhật thư viện Laravel..."
             cd frontend-web
