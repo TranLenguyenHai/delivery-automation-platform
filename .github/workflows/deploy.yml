@@ -36,6 +36,8 @@ jobs:
             
             echo "5. Khởi động lại các Service nền tảng..."
             cd ~/delivery-automation-platform
+            chown -R 1000:1000 n8n_data/
+            chmod -R 775 n8n_data/
             docker rm -f n8n 2>/dev/null || true
             docker-compose up -d
             
